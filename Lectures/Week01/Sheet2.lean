@@ -31,29 +31,32 @@ variable (P Q R : Prop)
 
 -- Example 1a: Using apply to transform the goal
 lemma piq (h : P → Q) (h2 : P) : Q := by
-  apply h  -- **Backward**: apply hypothesis `h` at the goal
+  apply h
   exact h2
 
 -- Example 1b: Using apply with existing assumptions
 example (h : P → Q) (h2 : P) : Q := by
-  apply h at h2 -- **Forward**: apply hypothesis `h` at hypothesis `h2`
+  apply h at h2
   exact h2
 
 -- To keep `h2 : P`, we can also define a new local proof instead of transforming `h2`
 example (h : P → Q) (h2 : P) : Q := by
-  let h2' := h h2 -- A new local proof `h2' : Q`, we still have the old `h2 : P`
+  let h2' := h h2
   exact h2'
-
 
 -- Example 2a: Using apply to transform the goal
 example (h1 : P → Q) (h2 : Q → R) (h3 : P) : R := by
   -- **Backward**: apply hypothesis at the goal
-  sorry
+  apply h2
+  apply h1
+  exact h3
 
 -- Example 2b: Using apply with existing assumptions
 example (h1 : P → Q) (h2 : Q → R) (h3 : P) : R := by
   -- **Forward**: apply hypothesis at another hypothesis
-  sorry
+  apply h1 at h3
+  apply h2 at h3
+  exact h3
 
 
 /-!
@@ -64,16 +67,16 @@ This is often the case when you have implications or functions that require more
 example {S : Prop} (h0 : P ∧ Q ∧ R) (h : P → Q → R → S) : S := by
   apply h -- three subgoals `P`, `Q`, `R`
   · -- subgoal `P`
-    sorry
+    exact h0.left
   · -- subgoal `Q`
-    sorry
+    exact h0.right.left
   · -- subgoal `R`
-    sorry
+    exact h0.right.right
 
 #check lt_trans -- lt_trans (...) : a < b → b < c → a < c
 example (x y z : ℝ) (hab : x < y) (hbc : y < z) : x < z := by
   apply lt_trans (b := y)
   · -- subgoal `x < y`
-    sorry
+    exact hab
   · -- subgoal `y < z`
-    sorry
+    exact hbc
