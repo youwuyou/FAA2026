@@ -55,12 +55,14 @@ Suppose the goal is `a + 1 = b + 1` and we have `h : a = b`.
   *New goal*: `⊢ b + 1 = b + 1`
 -/
 example (a b : ℕ) (h : a = b) : a + 1 = b + 1 := by
-  rewrite [h]   -- replace a by b
-  rfl           -- b+1 = b+1
+  rw [h]
+  -- rewrite [h]   -- replace a by b
+  -- rfl           -- b+1 = b+1
 
 example (a b : ℕ) (h : a = b) : a + 1 = b + 1 := by
-  rewrite [← h] -- replace b by a
-  rfl           -- a+1 = a+1
+  rw [←h]
+  -- rewrite [← h] -- replace b by a
+  -- rfl           -- a+1 = a+1
 
 /-!
 **Example 2: rewrite using a function definition**
@@ -77,10 +79,11 @@ that definition in the goal.
 The tactic `rw` closes this last goal automatically using `rfl`.
 -/
 example : f 0 0 := by -- Prove using `rewrite`
-  sorry
+  rewrite [f]
+  rfl
 
 example : f 0 0 := by -- Prove using `rw`
-  sorry
+  rw [f]
 
 
 /-! ### More new tactics
@@ -89,6 +92,11 @@ example : f 0 0 := by -- Prove using `rw`
 * `trivial`       -- apply simple tactics such as `rfl`, `assumption`, or `contradiction`
 -/
 
+-- A naive proof
+example (a b : ℕ) (h1 : a = b) : a = b := by
+  exact h1
+
+
 -- Prove by contradiction
 example (a b : ℕ) (h1 : a = b) : a = b := by
   by_contra h2
@@ -96,8 +104,9 @@ example (a b : ℕ) (h1 : a = b) : a = b := by
   -- alternatively, we can also tell Lean the contradicting hypotheses directly using `exact h2 h1`
 
 theorem modus_tollens (P Q : Prop) (hPQ : P → Q) (hnQ : ¬ Q) : ¬ P := by
-  sorry
-
+  by_contra h
+  let h1 := hPQ h
+  contradiction
 
 /-!
 * `symm`        -- transform a goal (or hypothesis) `x = a` to `a = x`
@@ -105,9 +114,27 @@ theorem modus_tollens (P Q : Prop) (hPQ : P → Q) (hnQ : ¬ Q) : ¬ P := by
 -/
 
 example (x : ℕ) : f 0 x → x = 0 := by
-  sorry
+  -- f : ℕ → ℕ → Prop
+  -- f 0 : ℕ → Prop
+  -- f 0 x : Prop
+  rewrite [f]
+  intro h
+  symm
+  exact h
 
 -- Give a direct proof
-example (x : ℕ) : f x 1 → x ≠ 2 := by sorry
+example (x : ℕ) : f x 1 → x ≠ 2 := by
+  intro h
+  rewrite [f] at h
+  rewrite [h]
+  trivial
 
-example (x y : ℕ) : f 0 x ∧ f 0 y → x = y := by sorry
+example (x y : ℕ) : f 0 x ∧ f 0 y → x = y := by
+  intro h
+  let hL := h.left
+  rewrite [f] at hL
+  let hR := h.right
+  rewrite [f] at hR
+  rewrite [←hL]
+  rewrite [←hR]
+  rfl
