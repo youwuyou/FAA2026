@@ -76,11 +76,12 @@ theorem modus_ponens (P Q : Prop) (h_pq : P → Q) (h_p : P) : Q :=
   -- h_pq has function type `P → Q` (input `P`, output `Q`)
   -- h_p has type `P`
   -- We want to obtain a term of type `Q`
-  sorry
+  -- sorry
+  h_pq h_p
 
 theorem conjunction (P Q : Prop) (h_p : P) (h_q : Q) : P ∧ Q :=
   -- `And.intro` is a Lean (constructor) function of type `P → Q → P ∧ Q`.
-  sorry
+  And.intro h_p h_q
 
 #check And.intro
 
@@ -113,10 +114,10 @@ theorem [name] (optional parameters/assumptions) : [proposition] := [proof]
 * `rfl`         -- reflexive property a = a: the goal `a = a` can be closed because two objects are definitionally equal
 -/
 example : P = P := by
-  sorry
+  rfl
 
 example : 4 = 4 := by
-  sorry
+  rfl
 
 
 /-! ### exact
@@ -124,10 +125,10 @@ example : 4 = 4 := by
                The term can be a hypothesis or a proof obtained by applying a theorem or function.
 -/
 example (hP : P) : P := by
-  sorry
+  exact hP
 
 example (hP : P) (hQ : Q) : Q := by
-  sorry
+  exact hQ
 
 #check Eq.symm -- Eq.symm ... (h : a = b) : b = a
 
@@ -147,13 +148,18 @@ example (a b : ℕ) (h : a = b) : b = a := by
   *New goal* : `⊢ Q`
 -/
 example (hQ : Q) : P → Q := by
-  sorry
+  intro h
+  exact hQ
 
 example : P → P := by
-  sorry
+  intro h
+  exact h
 
 example : P → (Q → P) := by
-  sorry
+  intro h
+  intro h1
+  exact h
+
 
 
 /- ### constructor
@@ -162,14 +168,19 @@ example : P → (Q → P) := by
                 --       to prove P ↔ Q, let's prove P → Q and Q → P separately
 -/
 example (hP : P) (hQ : Q) : P ∧ Q := by
-  sorry
+  constructor
+  · -- subgoal P, type \dot or \. to write "·"
+    exact hP
+  · -- subgoal Q
+    exact hQ
 
 /-
 Destructuring terms of type `P ∧ Q`
 -/
 example : (P ∧ Q) → P := by
   intro h
-  exact h.left -- or: h.1
+  exact h.left
+
 
 example : (P ∧ Q) → P := by
   intro ⟨hP, hQ⟩ -- type `\<` and `\>` to write `⟨` and `⟩`
@@ -177,16 +188,22 @@ example : (P ∧ Q) → P := by
 
 example : (P ∧ Q) → Q := by
   intro h
-  sorry
+  exact h.right
 
 example : (P ∧ Q) → Q := by
   intro ⟨hP, hQ⟩
-  sorry
+  exact hQ
 
 
-example: P ∧ Q ↔ Q ∧ P:= by
+example : P ∧ Q ↔ Q ∧ P:= by
   constructor
   · -- Subgoal 1: P ∧ Q → Q ∧ P
-    sorry
+    intro ⟨hP, hQ⟩
+    constructor
+    · exact hQ
+    · exact hP
   · -- Subgoal 2: Q ∧ P → P ∧ Q
-    sorry
+    intro ⟨hQ, hP⟩
+    constructor
+    · exact hP
+    · exact hQ
