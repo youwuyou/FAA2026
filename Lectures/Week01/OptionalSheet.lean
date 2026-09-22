@@ -141,7 +141,22 @@ Exercise 1.A.1:
 Provide a proof for the transitivity of `→` in **term**-mode.
 -/
 theorem Q1A1 : (P → Q) ∧ (Q → R) → (P → R) := -- You are not allowed to use tactics (`by` keyword) in this task
-  sorry
+  -- Here we have pq: P → Q, qr: Q → R
+  fun ⟨pq, qr⟩ (p: P) => qr (pq p)
+
+-- Note: my note for this exercise, recall previous example of (youwuyou):
+example : (P → Q) → (Q → R) → (P → R) := by
+  intro h
+  intro h1
+  intro h2
+  apply h at h2
+  apply h1 at h2
+  exact h2
+
+-- in term mode
+example : (P → Q) → (Q → R) → (P → R) :=
+  fun (h : P → Q) (h1: Q → R) (hP: P) =>
+    h1 (h hP)
 
 /--
 Exercise 1.A.2:
@@ -150,8 +165,11 @@ Provide a proof for the transitivity of `→` in **tactic**-mode.
 You may only use the tactics `intro`, `apply`, and `exact`.
 -/
 theorem Q1A2 : (P → Q) ∧ (Q → R) → (P → R) := by
-  sorry
-
+  intro ⟨h_pq, h_qr⟩
+  intro p
+  apply h_pq at p
+  apply h_qr at p
+  exact p
 
 /--
 Exercise 1.B.1:
@@ -160,7 +178,14 @@ Provide a proof for the contraposition in **term**-mode.
 Hint: The examples above about negation and `False.elim` might be helpful.
 -/
 theorem Q1B1 : (P → Q) → (¬Q → ¬P) := -- You are not allowed to use tactics (`by` keyword) in this task
-  sorry
+  fun (h_pq : P → Q) (nq : ¬Q) (p : P) =>
+    let q := h_pq p
+    nq q
+
+-- if using False.elim
+theorem Q1B1_elim : (P → Q) → (¬Q → ¬P) := -- You are not allowed to use tactics (`by` keyword) in this task
+  fun (h_pq : P → Q) (nq : ¬Q) (p : P) =>
+    False.elim (nq (h_pq p))
 
 /--
 Exercise 1.B.2:
@@ -169,8 +194,12 @@ Provide a proof for the contraposition in **tactic**-mode.
 You may only use the tactics `intro`, `apply`, `by_contra`, and `exact`.
 -/
 theorem Q1B2 : (P → Q) → (¬Q → ¬P) := by
-  sorry
-
+  intro h_pq
+  intro nq
+  by_contra
+  let q := h_pq this
+  apply h_pq at this
+  contradiction
 
 /--
 Exercise 2:
@@ -179,5 +208,36 @@ Prove the following proposition.
 You may only use the tactics `constructor`, `cases`, `intro`, `apply`, and `exact`.
 -/
 theorem Q2 : (P → Q ∧ R) ↔ ((P → Q) ∧ (P → R)) := by
-  sorry
+  constructor
+  · -- subgoal (P → Q ∧ R) → (P → Q) ∧ (P → R)
+    intro h -- this gives P → Q ∧ R
+    constructor
+    · intro hp
+      cases h hp with
+      | intro hq hr =>
+        exact hq
+    · intro hp
+      cases h hp with
+      | intro hq hr =>
+        exact hr
+  · -- subgoal (P → Q) ∧ (P → R) → P → Q ∧ R
+    intro ⟨h_pq, h_pr⟩
+    intro var
+    let q := h_pq var
+    let r := h_pr var
+    exact ⟨q, r⟩
 
+-- Example: pattern matching on Or and using `left` / `right`
+example : (P ∨ (Q ∧ R)) → (R ∧ Q) ∨ P := by
+  intro p_or_qr
+  cases p_or_qr with
+  -- if p_or_qr is constructed from Or.inl, we get `p : P`
+  | inl p =>
+    right -- we prove the right part of the disjunction `(R ∧ Q) ∨ P`
+    exact p
+  -- if p_or_qr is constructed from Or.inr, we get `qr : Q ∧ R`
+  | inr qr =>
+    left -- we prove the left part of the disjunction `(R ∧ Q) ∨ P`
+    constructor
+    · exact qr.2
+    · exact qr.1
