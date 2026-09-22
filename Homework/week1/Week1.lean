@@ -101,9 +101,9 @@ Exercise 4:
 Show that any positive natural number `n + 1` divides its factorial.
 You may only use the tactics `rw`, `rewrite`, `apply`, and `exact`.
 -/
-
 theorem Q4 (n : ℕ) : (n + 1) ∣ fac (n + 1) := by
-  sorry
+-- we have the form of a | a * b, directly applicable for the goal
+  apply dvd_mul_right
 
 /--
 Exercise 5:
@@ -115,6 +115,14 @@ Hint: you may want to use the theorem `Q4` that you have proven above.
 You will still get the points for this exercise if you have not proven `Q4`.
 -/
 theorem Q5 (n k d : ℕ) (h : k ∣ (n + 1)) (h2 : fac (n + 1) = d) : k ∣ d := by
-  sorry
+  -- by transitivity we know `k | (n+1)` and `(n+1) | fac (n+1)` implies `k | fac (n+1)`
+  -- in sheet 2 we had a similar application for `apply lt_trans (b := y)`
+  apply dvd_trans (b := (n+1))
+  -- subgoal 1: show k | (n+1)
+  · exact h
+  -- subgoal 2: show (n+1) | d
+  -- first transform subgoal to (n+1) | fac(n+1)
+  · rewrite [← h2]
+    apply Q4 n -- apply theorem with `n` substituted
 
 end Divisibility
