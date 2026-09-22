@@ -22,7 +22,7 @@ Prove the following proposition in **term**-mode.
 -/
 theorem Q1 (p : P) (q : Q) (pr : P → R) (qrs : Q ∧ R → S) : S :=
   -- You are not allowed to use tactics (`by` keyword) in this task
-  qrs (And.intro q (pr p)) -- here we just curried toward the goal type
+  qrs (And.intro q (pr p)) -- here we just use function application toward the goal type
 /--
 Exercise 2:
 
