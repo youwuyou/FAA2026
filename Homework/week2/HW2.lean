@@ -132,7 +132,32 @@ notation A " ∆ " B => Set.symm_diff A B
   You may only use the tactics stated at the start of the sheet.
 -/
 theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) := by
-  sorry
+  -- TODO: I still need to add the informal proof
+  intro lhs
+  obtain ⟨ha, hbc⟩ := lhs
+  -- rw [symm_diff]
+  -- rw [symm_diff] at hbc
+  cases hbc with
+  | inl hb_diff =>
+    left
+    obtain ⟨hb, hnc⟩ := hb_diff
+    constructor
+    -- subgoal 1.1: x ∈ A ∩ B
+    · exact ⟨ha, hb⟩
+    -- subgoal 1.2: x ∉ A ∩ C
+    · by_contra
+      obtain ⟨_, hc⟩ := this
+      contradiction
+  | inr hc_diff =>
+    right
+    obtain ⟨hc, hnb⟩ := hc_diff
+    constructor
+    -- subgoal 2.1: x ∈ A ∩ C
+    · exact ⟨ha, hc⟩
+    -- subgoal 2.2: x ∉ A ∩ B
+    · by_contra
+      obtain ⟨ha, hb⟩ := this
+      contradiction
 
 /-
   Exercise 3:
