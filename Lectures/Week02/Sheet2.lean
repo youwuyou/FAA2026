@@ -55,7 +55,13 @@ def S2 : Set (ℕ) := {10,20}
 
 example : S1 ⊆ S2 := by
   rw [S1,S2]
-  sorry
+  rw [Set.subset_def]
+  intro x hx
+  rw [mem_insert_iff]
+  rw [hx]
+  left -- reduce goal to the left part in an "OR"
+  rfl
+
 
 /-! For technical details
  (1) def Set (α : Type u) := α → Prop.
@@ -68,12 +74,12 @@ example : S1 ⊆ S2 := by
 example : (10 ∈ S1) = (S1 10) := by rfl
 
 --  (3) How to define an emptyset?
-def my_emptyset : Set ℕ := sorry
-example: my_emptyset = ∅  := sorry
+def my_emptyset : Set ℕ := fun _ ↦ False
+example : my_emptyset = ∅  := rfl
 
 --  (4) How to define a universe set?
-def my_univ : Set ℕ := sorry
-example: my_univ = univ := sorry
+def my_univ : Set ℕ := fun _ ↦ True
+example : my_univ = univ := rfl
 
 
 variable {α : Type*}
@@ -103,9 +109,25 @@ example : A ∩ B ⊆ B := by
 
 -- Exercise 1: resolve the sorry
 #check subset_def
-example : A ⊆ B → B ⊆ C → A ⊆ C := sorry
+example : A ⊆ B → B ⊆ C → A ⊆ C :=
+  fun (h : A ⊆ B) (h1 : B ⊆ C) (a : α) (ha : a ∈ A) ↦ h1 (h ha)
 
 -- Exercise 2:  More exercises
 #check Set.inter_def
-example : A ∩ B ⊆ B := by sorry
-example : A ⊆ B → A ⊆ C → A ⊆ B ∩ C := by sorry
+example : A ∩ B ⊆ B := by
+  intro a lhs
+  rw [Set.inter_def] at lhs
+  exact lhs.right
+
+example : A ⊆ B → A ⊆ C → A ⊆ B ∩ C := by
+  intro h_AB h_C
+  rw [subset_def]
+  rw [subset_def] at h_AB
+  rw [subset_def] at h_C
+  rw [Set.inter_def]
+  intro x hx
+  constructor
+  -- subgoal 1:  x ∈ B
+  · exact h_AB x hx
+  -- subgoal 2:  x ∈ C
+  · exact h_C x hx
