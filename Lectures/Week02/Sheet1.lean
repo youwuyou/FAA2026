@@ -59,13 +59,27 @@ example (n : ℤ) (h : IsEven n) : ∃ k, n = k + k := by
   -- Use `obtain` to get the number `n` and its properties from `h`.
   -- The syntax is: obtain ⟨a, ha⟩ := h
   unfold IsEven at h
-  sorry
+  obtain ⟨a, ha⟩ := h
+  use a
+  rw [ha]
+  ring -- instead of two_mult taught in class
 
 def IsOdd (n : ℤ) : Prop := ∃ k, n = 2 * k + 1
 
-example (n:ℤ) (h : IsEven n) :  IsOdd (n+1) := by
-  sorry
+example (n : ℤ) (h : IsEven n) :  IsOdd (n+1) := by
+  unfold IsEven at h
+  unfold IsOdd
+  obtain ⟨x, hx⟩ := h
+  use x
+  rw [hx]
 
 -- Exercise . Prove that the sum of two even numbers is even.
-example (a b:ℤ) (h_a : IsEven a) (h_b : IsEven b) : IsEven (a + b) := by
-  sorry
+example (a b : ℤ) (h_a : IsEven a) (h_b : IsEven b) : IsEven (a + b) := by
+  unfold IsEven at h_a
+  unfold IsEven at h_b
+  unfold IsEven
+  obtain ⟨na, ha⟩ := h_a
+  obtain ⟨nb, hb⟩ := h_b
+  use na + nb
+  rw [ha, hb]
+  ring
