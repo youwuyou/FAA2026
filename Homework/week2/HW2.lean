@@ -9,7 +9,7 @@ import Mathlib.Algebra.Group.Pointwise.Set.Basic
 
 /-!
 # Exercise File for Week 2
--- Additional instruction: for every problem, you must supply an informal proof before a Lean proof. 
+-- Additional instruction: for every problem, you must supply an informal proof before a Lean proof.
 -/
 
 /-
@@ -82,7 +82,42 @@ example (P Q : Prop) (h : P ∨ Q) : Q ∨ P := by
   You may only use the tactics stated at the start of the sheet.
 -/
 theorem Q1 : (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C) := by
-  sorry
+  -- my informal idea: we need a bidirectional implication, w.l.o.g
+  -- we discuss for subgoal 1 that:
+  -- x ∈ (A ∩ B) ∪ C ↔ x ∈ (A ∩ B) ∨ (x ∈ C)
+  -- then we need to do a lot of case distinctions...
+  ext x
+  constructor
+  -- subgoal 1: x ∈ (A ∩ B) ∪ C → x ∈ (A ∪ C) ∩ (B ∪ C)
+  · intro lhs
+    constructor
+    -- subgoal 1.1: x ∈ A ∪ C
+    · cases lhs with
+      | inl hab =>
+        obtain ⟨ha, hb⟩ := hab
+        left
+        exact ha
+      | inr hc =>
+        right
+        exact hc
+    -- subgoal 1.2: x ∈ B ∪ C
+    · cases lhs with
+      | inl hab =>
+        obtain ⟨ha, hb⟩ := hab
+        left
+        exact hb
+      | inr hc =>
+        right
+        exact hc
+  -- subgoal 2: x ∈ (A ∪ C) ∩ (B ∪ C) → x ∈ (A ∩ B) ∪ C
+  · intro lhs
+    obtain ⟨hac, hbc⟩ := lhs
+    cases hac with
+    | inl ha =>
+      cases hbc with
+      | inl hb => left; exact And.intro ha hb
+      | inr hc => right; exact hc
+    | inr hc => right; exact hc
 
 /-
   We define the operation of the symmetric difference on sets.
