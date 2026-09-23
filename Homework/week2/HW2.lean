@@ -85,38 +85,34 @@ theorem Q1 : (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C) := by
   -- my informal idea: we need a bidirectional implication, w.l.o.g
   -- we discuss for subgoal 1 that:
   -- x ∈ (A ∩ B) ∪ C ↔ x ∈ (A ∩ B) ∨ (x ∈ C)
-  -- then we need to do a lot of case distinctions...
+  -- then we need to do a lot of case distinctions, which we
+  -- clarify in the following
   ext x
   constructor
   -- subgoal 1: x ∈ (A ∩ B) ∪ C → x ∈ (A ∪ C) ∩ (B ∪ C)
   · intro lhs
-    constructor
-    -- subgoal 1.1: x ∈ A ∪ C
-    · cases lhs with
-      | inl hab =>
-        obtain ⟨ha, hb⟩ := hab
-        left
-        exact ha
-      | inr hc =>
-        right
-        exact hc
-    -- subgoal 1.2: x ∈ B ∪ C
-    · cases lhs with
-      | inl hab =>
-        obtain ⟨ha, hb⟩ := hab
-        left
-        exact hb
-      | inr hc =>
-        right
-        exact hc
+    -- we need to split case because x may land on either parts
+    cases lhs with
+    -- case 1.1: assume x ∈ (A ∩ B)
+    | inl hab =>
+      obtain ⟨ha, hb⟩ := hab
+      exact ⟨Or.inl ha, Or.inl hb⟩
+    -- case 1.2: assume x ∈ C
+    | inr hc =>
+      exact ⟨Or.inr hc, Or.inr hc⟩
   -- subgoal 2: x ∈ (A ∪ C) ∩ (B ∪ C) → x ∈ (A ∩ B) ∪ C
   · intro lhs
     obtain ⟨hac, hbc⟩ := lhs
+    -- here w.l.o.g we enter case distinction of x ∈ A ∪ C first
     cases hac with
+    -- if x ∈ A, we further leverage the fact that x ∈ B ∪ C holds
     | inl ha =>
       cases hbc with
-      | inl hb => left; exact And.intro ha hb
+      | inl hb =>
+        left
+        exact And.intro ha hb
       | inr hc => right; exact hc
+    -- if x ∈ C, we are done
     | inr hc => right; exact hc
 
 /-
