@@ -82,7 +82,7 @@ example (P Q : Prop) (h : P ∨ Q) : Q ∨ P := by
   You may only use the tactics stated at the start of the sheet.
 -/
 theorem Q1 : (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C) := by
-  -- my informal idea: we need a bidirectional implications
+  -- **my informal idea:** we need a bidirectional implications
   -- x ∈ (A ∩ B) ∪ C ↔ x ∈ (A ∩ B) ∨ (x ∈ C)
   -- then we need to do a lot of case distinctions, which we
   -- clarify in the following:
@@ -135,8 +135,11 @@ notation A " ∆ " B => Set.symm_diff A B
   You may only use the tactics stated at the start of the sheet.
 -/
 theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) := by
-  -- my informal idea:
-  --
+  -- **my informal idea:**
+  -- this proof consists of just one direction, where the LHS
+  -- to start with contains a conjunction, meaning we can
+  -- start with hbc : x ∈ (B Δ C) and then use ha : x ∈ A when appropriate,
+  -- which we detail as follows:
   intro lhs
   obtain ⟨ha, hbc⟩ := lhs
   -- Here the assumption hbc : x ∈ B ∆ C denotes × ∈ (B \ C) ∪ (C \ B)
@@ -187,17 +190,50 @@ theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) :=
 #check Iff.mp
 #check Iff.mpr
 
--- TODO: are these useful?
--- theorem Q1: (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C)
--- theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C)
 theorem Q3 : (A ∆ B) = Aᶜ ∆ Bᶜ := by
-  -- my informal idea:
-  -- this is again a set equivalence for which we need bidiectional implications
-  unfold symm_diff
-  ext
+  -- **my informal idea:**
+  -- this is again a set equivalence for which we need bidirectional implications
+  -- overall four subgoals of conjunction need to be proved, where:
+  -- **direction (→):** endgoals involved conjunction with right formula x ∉ Aᶜ
+  -- we use fun (h : x ∉ A) => h ha to express this comprehensively
+  -- **direction (←):** endgoals involved similarly a left slot in form of
+  -- x ∈ A, notice by our assumption ha : x ∉ Aᶜ must hold, we then may conclude with
+  -- by_contra.
+  ext x
   constructor
-  · sorry
-  · sorry
+  -- subgoal 1: x ∈ A \ B ∪ B \ A → x ∈ Aᶜ \ Bᶜ ∪ Bᶜ \ Aᶜ
+  · intro lhs
+    cases lhs with
+    | inl ha_nb =>
+      obtain ⟨ha, hnb⟩ := ha_nb
+      right
+      -- x ∈ Bᶜ \ Aᶜ is again a hidden conjunction of goals,
+      -- breaking it down
+      -- **Variant 1 (not used):** other than tuple we may use:
+      -- constructor
+      -- · exact hnb
+      -- · by_contra
+      --   contradiction
+      -- **Variant 2 (used throughout):** use function application elegantly :),
+      -- we will stick to this next
+      exact ⟨hnb, fun (h : x ∉ A) => h ha⟩
+    | inr hb_na =>
+      obtain ⟨hb, hna⟩ := hb_na
+      left
+      exact ⟨hna, fun (h : x ∉ B) => h hb⟩
+  -- subgoal 2: x ∈ Aᶜ \ Bᶜ ∪ Bᶜ \ Aᶜ → x ∈ A \ B ∪ B \ A
+  · intro lhs
+    cases lhs with
+    | inl hnab =>
+      obtain ⟨hna, hb⟩ := hnab
+      right
+      -- rw [mem_compl_iff] at hb -- hb : ¬(x ∉ B)
+      exact ⟨by_contra hb, hna⟩
+    | inr hnba =>
+      obtain ⟨hnb, ha⟩ := hnba
+      left
+      -- rw [mem_compl_iff] at ha -- ha : x ∉ Aᶜ
+      exact ⟨by_contra ha, hnb⟩
 
 
 /-!
