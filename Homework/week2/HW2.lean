@@ -262,12 +262,48 @@ theorem symm_diff_assoc : ((A ∆ B) ∆ C) = (A ∆ (B ∆ C)) := by
   unfold symm_diff
   grind -- `grind` is a powerful tactic, but you are not allowed to use it yet
 
-
 theorem Q4a : (∅ ∆ A) = A := by
-  sorry
+  -- **my informal idea:** for sets that do not intersect, their symmetric
+  -- difference is just union
+  ext x
+  constructor
+  -- subgoal 1: (x ∈ ∅ ∆ A) → x ∈ A
+  · intro lhs
+    cases lhs with
+    | inl h_emp_na =>
+      obtain ⟨h_emp, h_na⟩ := h_emp_na
+      contradiction
+    | inr h_a_nemp =>
+      obtain ⟨h_a, h_nemp⟩ := h_a_nemp
+      exact h_a
+  -- subgoal 2: x ∈ A → x ∈ ∅ ∆ A
+  · intro lhs
+    right
+    constructor
+    · exact lhs
+    · by_contra; contradiction
 
 theorem Q4b : (A ∆ A) = ∅ := by
-  sorry
+  -- **my informal idea:** TODO
+  ext x
+  constructor
+  · intro lhs
+    -- rw [mem_empty_iff_false]
+    cases lhs with
+    | inl ha_na =>
+      obtain ⟨ha, hna⟩ := ha_na
+      contradiction
+    | inr ha_na =>
+      obtain ⟨ha, hna⟩ := ha_na
+      contradiction
+  · intro lhs
+    left
+    constructor
+    · by_contra
+      contradiction
+    · by_contra
+      contradiction
+
 
 theorem Q4c : ∀ A : Set ℕ, ∀ B : Set ℕ, ∃ C : Set ℕ, (A ∆ C) = B := by
   sorry
