@@ -82,16 +82,16 @@ example (P Q : Prop) (h : P ∨ Q) : Q ∨ P := by
   You may only use the tactics stated at the start of the sheet.
 -/
 theorem Q1 : (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C) := by
-  -- my informal idea: we need a bidirectional implication, w.l.o.g
-  -- we discuss for subgoal 1 that:
+  -- my informal idea: we need a bidirectional implications
   -- x ∈ (A ∩ B) ∪ C ↔ x ∈ (A ∩ B) ∨ (x ∈ C)
   -- then we need to do a lot of case distinctions, which we
-  -- clarify in the following
+  -- clarify in the following:
   ext x
   constructor
   -- subgoal 1: x ∈ (A ∩ B) ∪ C → x ∈ (A ∪ C) ∩ (B ∪ C)
   · intro lhs
-    -- we need to split case because x may land on either parts
+    -- we need to examine two assumptions to show they both lead
+    -- to the same desired result, intuitively, under disjunction x may land on either parts
     cases lhs with
     -- case 1.1: assume x ∈ (A ∩ B)
     | inl hab =>
@@ -102,6 +102,9 @@ theorem Q1 : (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C) := by
       exact ⟨Or.inr hc, Or.inr hc⟩
   -- subgoal 2: x ∈ (A ∪ C) ∩ (B ∪ C) → x ∈ (A ∩ B) ∪ C
   · intro lhs
+    -- the opposite direction requires x to lie on the intersection
+    -- we have a two-layered case distinctions and w.l.o.g., first assume x ∈ (A ∪ C)
+    -- the case distinction then proceed in a "nested" manner
     obtain ⟨hac, hbc⟩ := lhs
     -- here w.l.o.g we enter case distinction of x ∈ A ∪ C first
     cases hac with
@@ -132,15 +135,23 @@ notation A " ∆ " B => Set.symm_diff A B
   You may only use the tactics stated at the start of the sheet.
 -/
 theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) := by
-  -- TODO: I still need to add the informal proof
+  -- my informal idea:
+  --
   intro lhs
   obtain ⟨ha, hbc⟩ := lhs
-  -- rw [symm_diff]
-  -- rw [symm_diff] at hbc
+  -- Here the assumption hbc : x ∈ B ∆ C denotes × ∈ (B \ C) ∪ (C \ B)
+  -- rw [symm_diff] at hbc -- not needed but just to see in infoview more nicely...
+  -- we need to perform case distinction
   cases hbc with
+  -- case 1: we assume x ∈ B \ C
+  -- accordingly the appropriate "goal" would be the x ∈ (A ∩ B) \ (A ∩ C)
   | inl hb_diff =>
+    -- rw [symm_diff]
     left
     obtain ⟨hb, hnc⟩ := hb_diff
+    -- note that the set difference is implicitly a conjunction to require
+    -- while x in the intersection of A ∩ B, it must not lie in A ∩ C
+    -- then using constructor we divide the overall goal into subgoal to conquer
     constructor
     -- subgoal 1.1: x ∈ A ∩ B
     · exact ⟨ha, hb⟩
@@ -148,6 +159,7 @@ theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) :=
     · by_contra
       obtain ⟨_, hc⟩ := this
       contradiction
+  -- case 2: we assume x ∈ (C \ B)
   | inr hc_diff =>
     right
     obtain ⟨hc, hnb⟩ := hc_diff
@@ -175,8 +187,17 @@ theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) :=
 #check Iff.mp
 #check Iff.mpr
 
+-- TODO: are these useful?
+-- theorem Q1: (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C)
+-- theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C)
 theorem Q3 : (A ∆ B) = Aᶜ ∆ Bᶜ := by
-  sorry
+  -- my informal idea:
+  -- this is again a set equivalence for which we need bidiectional implications
+  unfold symm_diff
+  ext
+  constructor
+  · sorry
+  · sorry
 
 
 /-!
