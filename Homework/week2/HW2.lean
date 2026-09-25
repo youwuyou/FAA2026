@@ -73,32 +73,73 @@ example (P Q : Prop) (h : P ∨ Q) : Q ∨ P := by
     left
     exact hQ
 
+-- **my notes:** In the following, I will reference to some
+-- definitions in the book on "Diskrete Mathematik" by Prof. Ueli Maurer
+-- https://crypto.ethz.ch/teaching/DM24/
 
 /-
   Exercise 1:
 
   Prove the following theorem.
   You may only use the tactics stated at the start of the sheet.
+
+  **my informal proof:**
+  By set extensionality, denote for arbitrary element `x` we have
+             (A ∩ B) ∪ C =     (A ∪ C) ∩ (B ∪ C)
+  ⇔ ∀ x (x ∈ (A ∩ B) ∪ C ↔ x ∈ (A ∪ C) ∩ (B ∪ C))  | axiom of extensionality (3.2)
+
+  We prove the overall statement by proving the two directions of implications separately.
+
+  · (→) prove x ∈ (A ∩ B) ∪ C → x ∈ (A ∪ C) ∩ (B ∪ C)
+      From the assumption, by applying definition of union of sets directly
+            x ∈ (A ∩ B) ∪ C
+          ⇔ x ∈ (A ∩ B) ∨ x ∈ C               | def. set union (3.4)
+
+      This allows us to do a case distinction (denoted below as cases 1.1, 1.2)
+      · case 1.1: assume x ∈ (A ∩ B)
+            x ∈ (A ∩ B)
+          ⇔ x ∈ A ∧ x ∈ B                     | def. set intersection (3.4)
+
+        Before using the assumptions, observe that the statement to
+        prove can be rewritten as follows:
+            x ∈ (A ∪ C) ∩ (B ∪ C)
+          ⇔ x ∈ (A ∪ C) ∧ x ∈ (B ∪ C)
+          ⇔ (x ∈ A ∨ x ∈ C) ∧ (x ∈ B ∨ x ∈ C) | def. set intersection (3.4)
+                    |                    |
+                    ①                   ②
+        We see the left of the disjunction formula ① is fulfilled by assumption x ∈ A,
+        the left of the disjunction formula ② is fulfilled by assumption x ∈ C
+
+      · case 1.2: assume x ∈ C
+        This direction is easier and we may apply the assumption directly,
+        for disjunction formula ①, the right formula is fulfilled by assumption x ∈ C;
+        for disjunction formula ②, the right formula is fulfilled by assumption x ∈ C
+
+
+  · (←) prove x ∈ (A ∪ C) ∩ (B ∪ C) → x ∈ (A ∩ B) ∪ C
+
 -/
 theorem Q1 : (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C) := by
-  -- **my informal idea:** we need a bidirectional implications
-  -- x ∈ (A ∩ B) ∪ C ↔ x ∈ (A ∩ B) ∨ (x ∈ C)
-  -- then we need to do a lot of case distinctions, which we
-  -- clarify in the following:
   ext x
   constructor
   -- subgoal 1: x ∈ (A ∩ B) ∪ C → x ∈ (A ∪ C) ∩ (B ∪ C)
   · intro lhs
     -- we need to examine two assumptions to show they both lead
     -- to the same desired result, intuitively, under disjunction x may land on either parts
+    rw [Set.union_def] at lhs -- not explicitly needed but we add it here to match informal proof
     cases lhs with
     -- case 1.1: assume x ∈ (A ∩ B)
     | inl hab =>
+      rw [mem_inter_iff] at hab
       obtain ⟨ha, hb⟩ := hab
-      exact ⟨Or.inl ha, Or.inl hb⟩
+      constructor
+      · left; assumption
+      · left; assumption
     -- case 1.2: assume x ∈ C
     | inr hc =>
-      exact ⟨Or.inr hc, Or.inr hc⟩
+      constructor
+      · right; assumption
+      · right; assumption
   -- subgoal 2: x ∈ (A ∪ C) ∩ (B ∪ C) → x ∈ (A ∩ B) ∪ C
   · intro lhs
     -- the opposite direction requires x to lie on the intersection
@@ -112,7 +153,7 @@ theorem Q1 : (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C) := by
       cases hbc with
       | inl hb =>
         left
-        exact And.intro ha hb
+        exact ⟨ha, hb⟩
       | inr hc => right; exact hc
     -- if x ∈ C, we are done
     | inr hc => right; exact hc
@@ -339,6 +380,7 @@ notation "O(" g ")" => BigO g
   You may only use the tactics stated at the start of the sheet.
 -/
 theorem Q5 (g : ℕ → ℕ) : g ∈ O(g) := by
+  unfold BigO inBigO
   sorry
 
 end Asymptotics
