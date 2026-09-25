@@ -4,8 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Basil Rohner, Olivier Fischer, Sorrachai Yingchareonthawornchai
 -/
 import Mathlib.Tactic
-import Mathlib.Data.Set.Basic
-import Mathlib.Algebra.Group.Pointwise.Set.Basic
 
 /-!
 # Exercise File for Week 2
@@ -25,7 +23,8 @@ variable {α : Type} (A B C : Set α)
 # Information
 You are allowed to use the following tactics:
   `intro`, `ext`, `exact`, `apply`, `cases`, `obtain`, `left`, `right`, `expose_names`,
-  `constructor`, `rewrite`, `rw`, `have`, `rfl`, `assumption` and `contradiction`.
+  `constructor`, `rewrite`, `rw`, `have`, `rfl`, `assumption`, `contradiction`,
+  `by_contra`, `by_cases`, `unfold`, and `use`.
 You are also allowed to use local definitions using `let`.
 -/
 
