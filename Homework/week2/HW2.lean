@@ -117,12 +117,36 @@ example (P Q : Prop) (h : P ∨ Q) : Q ∨ P := by
 
 
   · (←) prove x ∈ (A ∪ C) ∩ (B ∪ C) → x ∈ (A ∩ B) ∪ C
+        From the assumption,
+        x ∈ (A ∪ C) ∩ (B ∪ C)
+      ⇔ x ∈ (A ∪ C) ∧ x ∈ (B ∪ C)
+      ⇔ (x ∈ A ∨ x ∈ C) ∧ (x ∈ B ∨ x ∈ C)
+                  |               |
+                  ③              ④
 
+        Before we continue, we rewrite the goal statement using set union,
+        x ∈ (A ∩ B) ∪ C
+      ⇔ x ∈ (A ∩ B) ∨ x ∈ C
+
+        Now we see only one of the above formula in disjunction needs to be fulfilled;
+        To verify this, we perform case distinction on assumptions, i.e. formulas within ③, ④.
+
+        Consider the left formula within the conjunction formula ③
+        · case 2.1: x ∈ A assumed, then for this fixed choice of ③, two other case distinctions
+          need to be considered for the formula ④ (x ∈ B ∨ x ∈ C)
+          · case 2.1.1: x ∈ B assumed, we recognize it shall fulfill the
+              left of the goal, i.e., x ∈ (A ∩ B) by direct use of assumptions
+          · case 2.1.2: x ∈ C assumed, then we see the right of the goal, i.e.,
+          x ∈ C is directly fulfilled by use of assumption
+
+        Or consider the right formula within ③:
+        · case 2.2: x ∈ C assumed, then again the right of the goal, i.e.
+          x ∈ C is directly fulfilled by use of assumption
 -/
 theorem Q1 : (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C) := by
   ext x
   constructor
-  -- subgoal 1: x ∈ (A ∩ B) ∪ C → x ∈ (A ∪ C) ∩ (B ∪ C)
+  -- (→) direction: x ∈ (A ∩ B) ∪ C → x ∈ (A ∪ C) ∩ (B ∪ C)
   · intro lhs
     -- we need to examine two assumptions to show they both lead
     -- to the same desired result, intuitively, under disjunction x may land on either parts
@@ -140,23 +164,25 @@ theorem Q1 : (A ∩ B) ∪ C = (A ∪ C) ∩ (B ∪ C) := by
       constructor
       · right; assumption
       · right; assumption
-  -- subgoal 2: x ∈ (A ∪ C) ∩ (B ∪ C) → x ∈ (A ∩ B) ∪ C
+  -- (←) direction: x ∈ (A ∪ C) ∩ (B ∪ C) → x ∈ (A ∩ B) ∪ C
   · intro lhs
-    -- the opposite direction requires x to lie on the intersection
-    -- we have a two-layered case distinctions and w.l.o.g., first assume x ∈ (A ∪ C)
-    -- the case distinction then proceed in a "nested" manner
     obtain ⟨hac, hbc⟩ := lhs
-    -- here w.l.o.g we enter case distinction of x ∈ A ∪ C first
+    rw [Set.union_def] at hac
+    rw [Set.union_def] at hbc
+    -- case 2: (x ∈ A) ∨ (x ∈ C)
     cases hac with
-    -- if x ∈ A, we further leverage the fact that x ∈ B ∪ C holds
+    -- case 2.1: x ∈ A
     | inl ha =>
       cases hbc with
+      -- case 2.1.1: x ∈ B
       | inl hb =>
         left
         exact ⟨ha, hb⟩
-      | inr hc => right; exact hc
+      -- case 2.1.2: x ∈ C
+      | inr hc => right; assumption
+    -- case 2.2: x ∈ C
     -- if x ∈ C, we are done
-    | inr hc => right; exact hc
+    | inr hc => right; assumption
 
 /-
   We define the operation of the symmetric difference on sets.
