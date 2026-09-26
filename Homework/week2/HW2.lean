@@ -103,8 +103,8 @@ example (P Q : Prop) (h : P ∨ Q) : Q ∨ P := by
         Before using the assumptions, observe that the statement to
         prove can be rewritten as follows:
             x ∈ (A ∪ C) ∩ (B ∪ C)
-          ⇔ x ∈ (A ∪ C) ∧ x ∈ (B ∪ C)
-          ⇔ (x ∈ A ∨ x ∈ C) ∧ (x ∈ B ∨ x ∈ C) | def. set intersection (3.4)
+          ⇔ x ∈ (A ∪ C) ∧ x ∈ (B ∪ C)         | def. set intersection (3.4)
+          ⇔ (x ∈ A ∨ x ∈ C) ∧ (x ∈ B ∨ x ∈ C) | def. set union (3.4)
                     |                    |
                     ①                   ②
         We see the left of the disjunction formula ① is fulfilled by assumption x ∈ A,
@@ -119,14 +119,14 @@ example (P Q : Prop) (h : P ∨ Q) : Q ∨ P := by
   · (←) prove x ∈ (A ∪ C) ∩ (B ∪ C) → x ∈ (A ∩ B) ∪ C
         From the assumption,
         x ∈ (A ∪ C) ∩ (B ∪ C)
-      ⇔ x ∈ (A ∪ C) ∧ x ∈ (B ∪ C)
-      ⇔ (x ∈ A ∨ x ∈ C) ∧ (x ∈ B ∨ x ∈ C)
+      ⇔ x ∈ (A ∪ C) ∧ x ∈ (B ∪ C)             | def. set intersection (3.4)
+      ⇔ (x ∈ A ∨ x ∈ C) ∧ (x ∈ B ∨ x ∈ C)     | def. set union (3.4)
                   |               |
                   ③              ④
 
         Before we continue, we rewrite the goal statement using set union,
         x ∈ (A ∩ B) ∪ C
-      ⇔ x ∈ (A ∩ B) ∨ x ∈ C
+      ⇔ x ∈ (A ∩ B) ∨ x ∈ C                   | def. set union (3.4)
 
         Now we see only one of the above formula in disjunction needs to be fulfilled;
         To verify this, we perform case distinction on assumptions, i.e. formulas within ③, ④.
