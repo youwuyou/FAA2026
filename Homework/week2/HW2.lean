@@ -199,32 +199,67 @@ notation A " ∆ " B => Set.symm_diff A B
 
   Prove the following theorem.
   You may only use the tactics stated at the start of the sheet.
+
+  **my informal proof:**
+  We only need to prove one direction,
+      x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C)
+
+  In the following we expand the symmetric difference in the
+  goal statement implicitly and have used:
+      x ∈ (A ∩ B) ∆ (A ∩ C)
+    ⇔ x ∈ ((A ∩ B) \ (A ∩ C)) ∪ ((A ∩ C) \ (A ∩ B))     | def. set union (3.4)
+    ⇔ x ∈ ((A ∩ B) \ (A ∩ C)) ∨ x ∈ ((A ∩ C) \ (A ∩ B))
+              |                   |
+            `left`                 `right`
+
+  In the proof below, either left or the right of the above disjunction formula
+  needs to be satisfied.
+
+  (→) Starting from the assumption,
+      x ∈ A ∩ (B Δ C)
+    ⇔ x ∈ A ∧ x ∈ (B Δ C)                   | def. set intersection (3.4)
+    ⇔ x ∈ A ∧ x ∈ (B \ C) ∪ (C \ B)         | def. symmetric difference
+    ⇔ x ∈ A ∧ (x ∈ (B \ C) ∨ x ∈ (C \ B))   | def. set union (3.4)
+        |          |
+        A.1        A.2
+
+      Examining the formula x ∈ (B \ C) ∪ (C \ B), i.e. (A.2) in the assumptions,
+      leads us to the case distinction, where
+      · case 1: x ∈ (B \ C) ⇔ x ∈ B ∧ x ∉ C assumed, the `left` of goal
+        is x ∈ ((A ∩ B) \ (A ∩ C)) as conjunction is involved in definition
+        of set difference, the goal breaks down to two subgoals:
+          · subgoal 1.1: x ∈ (A ∩ B); which is satisfied by assumption A.1 (x ∈ A)
+            in conjunction with (x ∈ B) in the assumption.
+          · subgoal 1.2: x ∉ (A ∩ C);
+            If by contradiction that x ∈ (A ∩ C), i.e. x ∈ A ∧ x ∈ C,
+            we see such x ∈ C contradicts x ∉ C in the overall assumption
+            of case 1.
+        Thus, x ∈ (A ∩ B) ∆ (A ∩ C) is fulfilled and closes case 1.
+
+      · case 2: x ∈ (C \ B) ⇔ x ∈ C ∧ x ∉ B assumed, the `right` of goal
+        is now x ∈ ((A ∩ C) \ (A ∩ B)), we break it down to
+          · subgoal 2.1: x ∈ (A ∩ C); satisfied by A.1 (x ∈ A)
+            in conjunction with (x ∈ C).
+          · subgoal 2.2: x ∉ (A ∩ B);
+            If by contradiction that x ∈ (A ∩ B), i.e. x ∈ A ∧ x ∈ B,
+            such x ∈ B contradicts x ∉ B in the overall assumption of case 2.
+        Again x ∈ (A ∩ B) ∆ (A ∩ C) is fulfilled and closes case 2.
 -/
 theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) := by
-  -- **my informal idea:**
-  -- this proof consists of just one direction, where the LHS
-  -- to start with contains a conjunction, meaning we can
-  -- start with hbc : x ∈ (B Δ C) and then use ha : x ∈ A when appropriate,
-  -- which we detail as follows:
   intro lhs
   obtain ⟨ha, hbc⟩ := lhs
-  -- Here the assumption hbc : x ∈ B ∆ C denotes × ∈ (B \ C) ∪ (C \ B)
-  -- rw [symm_diff] at hbc -- not needed but just to see in infoview more nicely...
-  -- we need to perform case distinction
+  rw [symm_diff] at hbc
+  rw [Set.union_def] at hbc
   cases hbc with
   -- case 1: we assume x ∈ B \ C
   -- accordingly the appropriate "goal" would be the x ∈ (A ∩ B) \ (A ∩ C)
   | inl hb_diff =>
-    -- rw [symm_diff]
     left
     obtain ⟨hb, hnc⟩ := hb_diff
-    -- note that the set difference is implicitly a conjunction to require
-    -- while x in the intersection of A ∩ B, it must not lie in A ∩ C
-    -- then using constructor we divide the overall goal into subgoal to conquer
     constructor
-    -- subgoal 1.1: x ∈ A ∩ B
+    -- subgoal 1.1: x ∈ (A ∩ B)
     · exact ⟨ha, hb⟩
-    -- subgoal 1.2: x ∉ A ∩ C
+    -- subgoal 1.2: x ∉ (A ∩ C)
     · by_contra
       obtain ⟨_, hc⟩ := this
       contradiction
