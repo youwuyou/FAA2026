@@ -446,9 +446,20 @@ notation "O(" g ")" => BigO g
 
   Prove the following theorem.
   You may only use the tactics stated at the start of the sheet.
+
+  **my informal proof:** TODO
 -/
 theorem Q5 (g : ℕ → ℕ) : g ∈ O(g) := by
   unfold BigO inBigO
-  sorry
+  rw [Set.mem_ofPred_eq]
+  use 1
+  constructor
+  -- subgoal 1: 0 < 1
+  · exact zero_lt_one
+  -- subgoal 2: ∃ n₀, ∀ n ≥ n₀, g n ≤ 1 * g n
+  · use 0
+    intro n hn         -- split out predicate in goal
+    rewrite [one_mul]  -- rewrite RHS of goal in form `g n ≤ g n`
+    rfl
 
 end Asymptotics
