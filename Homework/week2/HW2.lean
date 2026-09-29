@@ -283,58 +283,57 @@ theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) :=
 
   Hint: the following theorems may be helpful.
 -/
-#check Set.mem_union
-#check Set.mem_inter
-#check Set.mem_sdiff
-#check Set.mem_compl_iff
-#check Set.notMem_compl_iff
-#check Iff.mp
-#check Iff.mpr
+#check Set.mem_union          -- x ∈ a ∪ b ↔ x ∈ a ∨ x ∈ b
+#check Set.mem_inter          -- x ∈ a → x ∈ b → x ∈ a ∩ b
+#check Set.mem_sdiff          -- x ∈ s \ t ↔ x ∈ s ∧ x ∉ t
+#check Set.mem_compl_iff      -- x ∈ sᶜ ↔ x ∉ s
+#check Set.notMem_compl_iff   -- x ∉ sᶜ ↔ x ∈ s
+#check Iff.mp                 -- (a ↔ b) → a → b
+#check Iff.mpr                -- (a ↔ b) → b → a
 
+-- **my change in the style of informal proofs...**
+-- *Hi TA(s).. since the previous way of using DiskMath-like proofs took so much time*
+-- *and adding that the new moodle announcement provided the `example.lean`-like*
+-- *example of informal proof, we decided to continue using the option 2 from now on,*
+-- *to save some time 🙂*
+
+/-
+  **my informal proof:**
+  - First, by set extensionality the goal becomes "membership checks" x ∈ A ∆ B ↔ x ∈ Aᶜ ∆ Bᶜ.
+  - Second, split the equivalence into two directions to close separately
+  - Within each direction the assumption involves use of a symmetric difference,
+          which requires us to do a case split on the membership of x
+    - (→) direction: TODO
+
+    use definition of set difference, we see
+    - (←) direction:
+-/
 theorem Q3 : (A ∆ B) = Aᶜ ∆ Bᶜ := by
-  -- **my informal idea:**
-  -- this is again a set equivalence for which we need bidirectional implications
-  -- overall four subgoals of conjunction need to be proved, where:
-  -- **direction (→):** endgoals involved conjunction with right formula x ∉ Aᶜ
-  -- we use fun (h : x ∉ A) => h ha to express this comprehensively
-  -- **direction (←):** endgoals involved similarly a left slot in form of
-  -- x ∈ A, notice by our assumption ha : x ∉ Aᶜ must hold, we then may conclude with
-  -- by_contra.
   ext x
   constructor
-  -- subgoal 1: x ∈ A \ B ∪ B \ A → x ∈ Aᶜ \ Bᶜ ∪ Bᶜ \ Aᶜ
+  -- (→) direction: x ∈ A \ B ∪ B \ A → x ∈ Aᶜ \ Bᶜ ∪ Bᶜ \ Aᶜ
   · intro lhs
     cases lhs with
     | inl ha_nb =>
       obtain ⟨ha, hnb⟩ := ha_nb
       right
-      -- x ∈ Bᶜ \ Aᶜ is again a hidden conjunction of goals,
-      -- breaking it down
-      -- **Variant 1 (not used):** other than tuple we may use:
-      -- constructor
-      -- · exact hnb
-      -- · by_contra
-      --   contradiction
-      -- **Variant 2 (used throughout):** use function application elegantly :),
-      -- we will stick to this next
-      exact ⟨hnb, fun (h : x ∉ A) => h ha⟩
+      --  `x ∉ sᶜ ↔ x ∈ s`
+      exact ⟨hnb, Iff.mpr notMem_compl_iff ha⟩
     | inr hb_na =>
       obtain ⟨hb, hna⟩ := hb_na
       left
-      exact ⟨hna, fun (h : x ∉ B) => h hb⟩
-  -- subgoal 2: x ∈ Aᶜ \ Bᶜ ∪ Bᶜ \ Aᶜ → x ∈ A \ B ∪ B \ A
+      exact ⟨hna, Iff.mpr notMem_compl_iff hb⟩
+  -- (←) direction: x ∈ Aᶜ \ Bᶜ ∪ Bᶜ \ Aᶜ → x ∈ A \ B ∪ B \ A
   · intro lhs
     cases lhs with
     | inl hnab =>
       obtain ⟨hna, hb⟩ := hnab
       right
-      -- rw [mem_compl_iff] at hb -- hb : ¬(x ∉ B)
-      exact ⟨by_contra hb, hna⟩
+      exact ⟨Iff.mp notMem_compl_iff hb, hna⟩
     | inr hnba =>
       obtain ⟨hnb, ha⟩ := hnba
       left
-      -- rw [mem_compl_iff] at ha -- ha : x ∉ Aᶜ
-      exact ⟨by_contra ha, hnb⟩
+      exact ⟨Iff.mp notMem_compl_iff ha, hnb⟩
 
 
 /-!
@@ -346,68 +345,76 @@ theorem Q3 : (A ∆ B) = Aᶜ ∆ Bᶜ := by
 -/
 
 -- The following theorems may be helpful
-#check empty_sdiff
-#check empty_inter
-#check empty_union
+#check empty_sdiff -- ∅ \ s = ∅
+#check empty_inter -- ∅ ∩ a = ∅
+#check empty_union -- ∅ ∪ a = a
 
-#check sdiff_empty
-#check inter_empty
-#check union_empty
+#check sdiff_empty -- s \ ∅ = s
+#check inter_empty -- a ∩ ∅ = ∅
+#check union_empty -- a ∪ ∅ = a
 
-#check sdiff_self
-#check inter_self
-#check union_self
+#check sdiff_self -- s \ s = ∅
+#check inter_self -- a ∩ a = a
+#check union_self -- a ∪ a = a
 
 -- You can use also the following theorem
 theorem symm_diff_assoc : ((A ∆ B) ∆ C) = (A ∆ (B ∆ C)) := by
   unfold symm_diff
   grind -- `grind` is a powerful tactic, but you are not allowed to use it yet
 
+/-
+  **my informal proof:** for sets that do not intersect, their symmetric
+  difference is just union
+#check empty_sdiff -- ∅ \ s = ∅
+#check sdiff_empty -- s \ ∅ = s
+-/
 theorem Q4a : (∅ ∆ A) = A := by
-  -- **my informal idea:** for sets that do not intersect, their symmetric
-  -- difference is just union
   ext x
   constructor
   -- subgoal 1: (x ∈ ∅ ∆ A) → x ∈ A
   · intro lhs
     cases lhs with
     | inl h_emp_na =>
-      obtain ⟨h_emp, h_na⟩ := h_emp_na
+      rw [empty_sdiff] at h_emp_na
       contradiction
     | inr h_a_nemp =>
-      obtain ⟨h_a, h_nemp⟩ := h_a_nemp
-      exact h_a
+      rw [sdiff_empty] at h_a_nemp
+      assumption
   -- subgoal 2: x ∈ A → x ∈ ∅ ∆ A
   · intro lhs
     right
-    constructor
-    · exact lhs
-    · by_contra; contradiction
-
+    rw [sdiff_empty]
+    assumption
+/-
+  **my informal proof:** TODO
+#check sdiff_self -- s \ s = ∅
+#check empty_union -- ∅ ∪ a = a
+-/
 theorem Q4b : (A ∆ A) = ∅ := by
-  -- **my informal idea:** TODO
   ext x
   constructor
   · intro lhs
-    -- rw [mem_empty_iff_false]
-    cases lhs with
-    | inl ha_na =>
-      obtain ⟨ha, hna⟩ := ha_na
-      contradiction
-    | inr ha_na =>
-      obtain ⟨ha, hna⟩ := ha_na
-      contradiction
+    rw [symm_diff] at lhs
+    rw [sdiff_self] at lhs
+    rw [empty_union] at lhs
+    assumption
   · intro lhs
     left
-    constructor
-    · by_contra
-      contradiction
-    · by_contra
-      contradiction
+    rw [sdiff_self]
+    assumption
 
-
+/-
+  **my informal proof:** TODO
+-/
 theorem Q4c : ∀ A : Set ℕ, ∀ B : Set ℕ, ∃ C : Set ℕ, (A ∆ C) = B := by
-  sorry
+  intro A B
+  use symm_diff A B      -- for the existence proof, use C := A Δ B
+  -- infoview shows goal ⊢ (A ∆ A ∆ B) = B
+  -- right associative default, thus ⊢ (A ∆ (A ∆ B)) = B
+  -- we need to apply `symm_diff_assoc` starting from the RHS of the equation
+  rw [← symm_diff_assoc] -- symm_diff_assoc : ((A ∆ B) ∆ C) = (A ∆ (B ∆ C))
+  rw [Q4b] -- Q4b: (A ∆ A) = ∅
+  rw [Q4a] -- Q4a: (∅ ∆ A) = A
 
 end Set
 
@@ -430,9 +437,9 @@ notation "O(" g ")" => BigO g
 /-
   Hint: The following theorems may be helpful.
 -/
-#check Set.mem_ofPred_eq
-#check zero_lt_one
-#check one_mul
+#check Set.mem_ofPred_eq   -- (x ∈ {y | p y}) = p x
+#check zero_lt_one         -- 0 < 1
+#check one_mul             --  1 * a = a
 
 /-
   Exercise 5:
