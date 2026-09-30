@@ -260,8 +260,8 @@ theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) :=
     -- subgoal 1.1: x ∈ (A ∩ B)
     · exact ⟨ha, hb⟩
     -- subgoal 1.2: x ∉ (A ∩ C)
-    · by_contra
-      obtain ⟨_, hc⟩ := this
+    · by_contra h_ac
+      obtain ⟨ha, hc⟩ := h_ac
       contradiction
   -- case 2: we assume x ∈ (C \ B)
   | inr hc_diff =>
@@ -271,8 +271,8 @@ theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) :=
     -- subgoal 2.1: x ∈ A ∩ C
     · exact ⟨ha, hc⟩
     -- subgoal 2.2: x ∉ A ∩ B
-    · by_contra
-      obtain ⟨ha, hb⟩ := this
+    · by_contra h_ab
+      obtain ⟨ha, hb⟩ := h_ab
       contradiction
 
 /-
