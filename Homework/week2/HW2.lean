@@ -447,7 +447,18 @@ notation "O(" g ")" => BigO g
   Prove the following theorem.
   You may only use the tactics stated at the start of the sheet.
 
-  **my informal proof:** TODO
+  **my informal proof:**
+  · First, unfold the goal by definitions of big-O `O(g)` of a function `g`;
+    then we further use (x ∈ {y | p y}) = p x to simplify to a predicate expression
+  · Then to satisfies the existence condition. We may pick some constant `c = 1`.
+    Intuitively, we want to show the growth rate of a function cannot exceed itself.
+  · The introduction of the constant `c` splits the overall goal into two subgoals:
+      · subgoal 1: such a constant must be positive, which is fulfilled since
+        the assumption fulfills `0 < 1`
+      · subgoal 2: now we need to pick a starting index n₀, and to fulfill the predicate
+        for arbitrary `n` that for all such subsequent indices the inequality
+        g(n) ≤ 1 * g(n) holds. We notice `1` is a multiplicative identity element and
+        thus g(n) ≤ g(n), we then conclude the proof by reflexivity.
 -/
 theorem Q5 (g : ℕ → ℕ) : g ∈ O(g) := by
   unfold BigO inBigO
