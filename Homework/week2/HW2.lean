@@ -364,7 +364,7 @@ theorem symm_diff_assoc : ((A ∆ B) ∆ C) = (A ∆ (B ∆ C)) := by
 
 /-
   **my informal proof:** for sets that do not intersect, their symmetric
-  difference is just union
+  difference is just union TODO
 #check empty_sdiff -- ∅ \ s = ∅
 #check sdiff_empty -- s \ ∅ = s
 -/
@@ -386,9 +386,24 @@ theorem Q4a : (∅ ∆ A) = A := by
     rw [sdiff_empty]
     assumption
 /-
-  **my informal proof:** TODO
-#check sdiff_self -- s \ s = ∅
-#check empty_union -- ∅ ∪ a = a
+  **my informal proof:**
+  · By extensionality, for arbitrary element `x` we
+  rewrite the equality to set membership statements and break
+  them into a two-directional subgoals to prove.
+  · *subgoal 1:* (x ∈ A ∆ A) → x ∈ ∅
+    By definition of symmetric difference, the assumption
+    boils down to x ∈ (A \ A) ∪ (A \ A), then by lemma (s \ s = ∅),
+    i.e. the self set difference gives rise to an empty set, we are
+    essentially taking the union of two empty sets. By lemma (∅ ∪ a = a),
+    the overall assumption becomes x ∈ ∅, which now directly closes the
+    goal.
+  · *subgoal 2:* x ∈ ∅ → x ∈ A ∆ A
+    Use the definition of symmetric difference, the goal rewrites to
+    a union of the same set with itself `x ∈ (A \ A) ∪ (A \ A)`. We may pick either
+    one to proceed the proof.
+    Pick left of disjunction and aim to prove `x ∈ (A \ A)`.
+    By using self set difference lemma (s \ s = ∅), the goal
+    rewrites to `x ∈ ∅`, which is directly satisfied by assumption.
 -/
 theorem Q4b : (A ∆ A) = ∅ := by
   ext x
@@ -399,6 +414,7 @@ theorem Q4b : (A ∆ A) = ∅ := by
     rw [empty_union] at lhs
     assumption
   · intro lhs
+    rw [symm_diff]
     left
     rw [sdiff_self]
     assumption
@@ -463,9 +479,9 @@ notation "O(" g ")" => BigO g
   · Then to satisfies the existence condition. We may pick some constant `c = 1`.
     Intuitively, we want to show the growth rate of a function cannot exceed itself.
   · The introduction of the constant `c` splits the overall goal into two subgoals:
-      · subgoal 1: such a constant must be positive, which is fulfilled since
+      · *subgoal 1:* such a constant must be positive, which is fulfilled since
         the assumption fulfills `0 < 1`
-      · subgoal 2: now we need to pick a starting index n₀, and to fulfill the predicate
+      · *subgoal 2:* now we need to pick a starting index n₀, and to fulfill the predicate
         for arbitrary `n` that for all such subsequent indices the inequality
         g(n) ≤ 1 * g(n) holds. We notice `1` is a multiplicative identity element and
         thus g(n) ≤ g(n), we then conclude the proof by reflexivity.
