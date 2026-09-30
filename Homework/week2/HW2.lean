@@ -291,49 +291,101 @@ theorem Q2 (x : α) : x ∈ A ∩ (B ∆ C) → x ∈ (A ∩ B) ∆ (A ∩ C) :=
 #check Iff.mp                 -- (a ↔ b) → a → b
 #check Iff.mpr                -- (a ↔ b) → b → a
 
--- **my change in the style of informal proofs...**
--- *Hi TA(s).. since the previous way of using DiskMath-like proofs took so much time*
--- *and adding that the new moodle announcement provided the `example.lean`-like*
--- *example of informal proof, we decided to continue using the option 2 from now on,*
--- *to save some time 🙂*
-
 /-
   **my informal proof:**
   - First, by set extensionality the goal becomes "membership checks" x ∈ A ∆ B ↔ x ∈ Aᶜ ∆ Bᶜ.
   - Second, split the equivalence into two directions to close separately
   - Within each direction the assumption involves use of a symmetric difference,
           which requires us to do a case split on the membership of x
-    - (→) direction: TODO
+    - *subgoal 1* `(x ∈ A ∆ B) → x ∈ Aᶜ ∆ Bᶜ`: By definition of symmetric difference,
+    the assumption means the element fulfills either x ∈ (A \ B) or x ∈ (B \ A).
 
-    use definition of set difference, we see
-    - (←) direction:
+    We proceed with case distinction.
+      · *case 1.1:* assume x ∈ (A \ B), rewrite the assumption to
+              x ∈ (A \ B)
+            ⇔ x ∈ A ∧ x ∉ B    | def. set difference
+            ⇔ x ∉ Aᶜ ∧ x ∉ B   | lemma. `x ∉ sᶜ ↔ x ∈ s` (applied in "←" direction)
+                |        |
+              `left`    `right`
+
+        Now observe the goal on RHS involves a symmetric difference,
+              x ∈ Aᶜ Δ Bᶜ
+            ⇔ x ∈ (Aᶜ \ Bᶜ) ∪ (Bᶜ \ Aᶜ)      | def. symmetric difference
+            ⇔ x ∈ (Aᶜ \ Bᶜ) ∨ x ∈ (Bᶜ \ Aᶜ)  | def. set union
+                    |            |
+                    ➊           ➋
+
+        We target the formula ➋, by set difference this goal is equivalent to:
+              x ∈ (Bᶜ \ Aᶜ) ⇔ x ∈ Bᶜ ∧ x ∉ Aᶜ
+
+        Therefore, we can now close `x ∈ Bᶜ ∧ x ∉ Aᶜ` by substituting `left` assumption
+        to right spot in conjunction and `right` assumption to the left spot.
+      · *case 1.2:* assume x ∈ (B \ A), by definition of set difference
+               x ∈ (B \ A)
+            ⇔  x ∈ B  ∧ x ∉ A  | def. set difference
+            ⇔  x ∉ Bᶜ ∧ x ∉ A  | lemma. `x ∉ sᶜ ↔ x ∈ s` (applied in "←" direction)
+
+         now we target the formula ➊ in the goal, to prove
+            x ∈ (Aᶜ \ Bᶜ) ⇔ x ∈ Aᶜ ∧ x ∉ Bᶜ
+         we close it similarly by substituting x ∉ A to the left and x ∉ Bᶜ to the
+         right of the goal formula; these were provided as assumptions.
+
+    - *subgoal 2* `x ∈ (Aᶜ \ Bᶜ) ∪ (Bᶜ \ Aᶜ) → x ∈ (A \ B) ∪ (B \ A)`:
+    Start from the assumption, by set union definition
+            x ∈ (Aᶜ \ Bᶜ) ∪ (Bᶜ \ Aᶜ)
+          ⇔ x ∈ (Aᶜ \ Bᶜ) ∨ x ∈ (Bᶜ \ Aᶜ)
+    We proceed with case distinction,
+      · *case 2.1:* assume x ∈ (Aᶜ \ Bᶜ),
+            x ∈ (Aᶜ \ Bᶜ)
+          ⇔ x ∈ Aᶜ ∧ x ∉ Bᶜ  | def. set difference
+          ⇔ x ∈ Aᶜ ∧ x ∈ B   | lemma. `x ∉ sᶜ ↔ x ∈ s` (applied in "→" direction)
+        We use this to prove the right formula in the goal, i.e. x ∈ (B \ A).
+        This is equivalent by definition of set difference that x ∈ B ∧ x ∉ A,
+        this goal can be closed directly by our assumptions. With x ∈ Aᶜ substituted
+        to right spot in conjunction and x ∈ B to the left.
+      · *case 2.2:* assume x ∈ (Bᶜ \ Aᶜ)
+          x ∈ (Bᶜ \ Aᶜ)
+        ⇔ x ∈ Bᶜ ∧ x ∉ Aᶜ | def. set difference
+        ⇔ x ∈ Bᶜ ∧ x ∈ A | lemma. `x ∉ sᶜ ↔ x ∈ s` (applied in "→" direction)
+        Now we prove the left formula in the goal, i.e. x ∈ (A \ B). We see
+        by substituting x ∈ A in assumption to the left spot and x ∈ Bᶜ to the
+        right spot of the conjunction of set difference, we close the proof.
 -/
 theorem Q3 : (A ∆ B) = Aᶜ ∆ Bᶜ := by
   ext x
   constructor
-  -- (→) direction: x ∈ A \ B ∪ B \ A → x ∈ Aᶜ \ Bᶜ ∪ Bᶜ \ Aᶜ
+  -- subgoal 1: x ∈ (A \ B) ∪ (B \ A) → x ∈ (Aᶜ \ Bᶜ) ∪ (Bᶜ \ Aᶜ)
   · intro lhs
     cases lhs with
+    -- case 1.1: x ∈ A \ B
     | inl ha_nb =>
+      rw [Set.mem_sdiff] at ha_nb
       obtain ⟨ha, hnb⟩ := ha_nb
+      rw [←Set.notMem_compl_iff] at ha
       right
-      --  `x ∉ sᶜ ↔ x ∈ s`
-      exact ⟨hnb, Iff.mpr notMem_compl_iff ha⟩
+      rw [Set.mem_sdiff]
+      exact ⟨hnb, ha⟩
+    -- case 1.2: x ∈ B \ A
     | inr hb_na =>
       obtain ⟨hb, hna⟩ := hb_na
+      rw [←Set.notMem_compl_iff] at hb
       left
-      exact ⟨hna, Iff.mpr notMem_compl_iff hb⟩
-  -- (←) direction: x ∈ Aᶜ \ Bᶜ ∪ Bᶜ \ Aᶜ → x ∈ A \ B ∪ B \ A
+      exact ⟨hna, hb⟩
+  -- subgoal 2: x ∈ (Aᶜ \ Bᶜ) ∪ (Bᶜ \ Aᶜ) → x ∈ (A \ B) ∪ (B \ A)
   · intro lhs
     cases lhs with
+    -- case 2.1: x ∈ Aᶜ \ Bᶜ
     | inl hnab =>
       obtain ⟨hna, hb⟩ := hnab
+      rw [Set.notMem_compl_iff] at hb
       right
-      exact ⟨Iff.mp notMem_compl_iff hb, hna⟩
+      exact ⟨hb, hna⟩
+    -- case 2.2: x ∈ Bᶜ \ Aᶜ
     | inr hnba =>
       obtain ⟨hnb, ha⟩ := hnba
+      rw [Set.notMem_compl_iff] at ha
       left
-      exact ⟨Iff.mp notMem_compl_iff ha, hnb⟩
+      exact ⟨ha, hnb⟩
 
 
 /-!
