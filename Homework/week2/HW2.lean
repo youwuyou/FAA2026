@@ -404,7 +404,17 @@ theorem Q4b : (A ∆ A) = ∅ := by
     assumption
 
 /-
-  **my informal proof:** TODO
+  **my informal proof:**
+  · First, we follow the given notation and call the sets A, B;
+    we want to construct a set C such that it solves (A ∆ C) = B
+  · We construct C := A Δ B, and aim to show (A ∆ (A Δ B)) = B
+  · By associativity of symmetric difference ((A ∆ B) ∆ C) = (A ∆ (B ∆ C)) holds,
+    note our target is RHS of the above equality, which is equivalent to
+       ((A ∆ A) Δ B) = B
+     ⇔       (∅ Δ B) = B  | Q4b
+     ⇔             B = B  | Q4a
+    In the last two steps we applied the theorems Q4b, Q4a we proved above
+    and closed the proof by reflexivity.
 -/
 theorem Q4c : ∀ A : Set ℕ, ∀ B : Set ℕ, ∃ C : Set ℕ, (A ∆ C) = B := by
   intro A B
