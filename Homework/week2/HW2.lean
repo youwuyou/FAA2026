@@ -363,10 +363,25 @@ theorem symm_diff_assoc : ((A ∆ B) ∆ C) = (A ∆ (B ∆ C)) := by
   grind -- `grind` is a powerful tactic, but you are not allowed to use it yet
 
 /-
-  **my informal proof:** for sets that do not intersect, their symmetric
-  difference is just union TODO
-#check empty_sdiff -- ∅ \ s = ∅
-#check sdiff_empty -- s \ ∅ = s
+  **my informal proof:**
+  · By extensionality, for arbitrary element `x` we convert set equality
+    to two set membership statements and prove two split goals separately.
+  · *subgoal 1:* (x ∈ ∅ ∆ A) → x ∈ A
+    By definition of symmetric difference, we have either `x ∈ ∅ \ A` or `x ∈ A \ ∅`
+    rewrite this assumption to do case distinction as follows:
+      · *case 1.1:* assume x ∈ ∅ \ A, meaning x belongs to an empty set but
+        does not lie in the set A by definition of set difference. We directly
+        see contradiction and may close this case, since by definition of an
+        empty set, it is a set containing no elements.
+      · *case 1.2* assume x ∈ A \ ∅, note that by lemma of set difference with
+        an empty set (s \ ∅ = s), the assumption becomes x ∈ A. We can directly
+        use the assumption to close the goal.
+  · *subgoal 2:* x ∈ A → x ∈ ∅ ∆ A
+    Now assume x ∈ A, using definition of symmetric difference, the goal becomes
+    `x ∈ (∅ \ A) ∪ (A \ ∅)`. It suffices to prove the right subgoal in set union,
+    as it is equivalent to logical disjunction. To show `x ∈ (A \ ∅)`, use lemma
+    of set difference with an empty set (`s \ ∅ = s`), the goal rewrites to
+    `x ∈ A`, which we close directly by assumption.
 -/
 theorem Q4a : (∅ ∆ A) = A := by
   ext x
@@ -375,15 +390,16 @@ theorem Q4a : (∅ ∆ A) = A := by
   · intro lhs
     cases lhs with
     | inl h_emp_na =>
-      rw [empty_sdiff] at h_emp_na
+      rw [empty_sdiff] at h_emp_na -- empty_sdiff -- ∅ \ s = ∅
       contradiction
     | inr h_a_nemp =>
-      rw [sdiff_empty] at h_a_nemp
+      rw [sdiff_empty] at h_a_nemp -- sdiff_empty -- s \ ∅ = s
       assumption
   -- subgoal 2: x ∈ A → x ∈ ∅ ∆ A
   · intro lhs
+    rw [symm_diff]
     right
-    rw [sdiff_empty]
+    rw [sdiff_empty]               -- sdiff_empty -- s \ ∅ = s
     assumption
 /-
   **my informal proof:**
