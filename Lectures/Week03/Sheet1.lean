@@ -31,13 +31,13 @@ example (n : ℕ) : I n = n := by
   induction n with
   | zero =>
     -- Base case: `I 0 = 0`
-    sorry
+    rw [I] -- use definition
   | succ i ih =>
     -- Induction step:
     --   assume `ih : I i = i`
     --   prove `I (i+1) = i+1`
-    sorry
-
+    unfold I
+    rw [ih]
 
 /-
   New tactics:
@@ -60,7 +60,13 @@ def I2 : ℕ → ℕ
 #eval [I2 0, I2 1, I2 2]
 
 example (n : ℕ) : I2 n = 2*n := by
-  sorry
+  induction n with
+    -- case case: `I2 0 = 0`
+  | zero =>
+    rw [I2]
+  | succ i ih =>
+    unfold I2
+    omega
 
 example (n : ℕ) : Even (I2 n) := by
   induction n with
@@ -79,8 +85,24 @@ example (n : ℕ) : Even (I2 n) := by
 
 -- Exercise 2
 theorem even_or_odd (n : ℕ) : (∃ k, n = 2*k) ∨ (∃ k, n = 2*k+1) := by
-  sorry
-
+  induction n with
+  | zero =>
+    left
+    use 0
+  | succ i ih =>
+    -- case distinction
+    cases ih with
+    | inl h =>
+      obtain ⟨k, hk⟩ := h
+      right
+      rw [hk]
+      use k
+    | inr h =>
+      obtain ⟨k, hk⟩ := h
+      left
+      rw [hk]
+      use k+1
+      rfl
 
 -- Consider the following recursive sum definition
 def S : ℕ → ℕ
@@ -90,8 +112,17 @@ def S : ℕ → ℕ
 #eval [S 1, S 2, S 3]
 
 -- Exercise 3
-lemma Sn_two (n : ℕ) : 2*(S n) = n * (n + 1) := by sorry
-
+lemma Sn_two (n : ℕ) : 2*(S n) = n * (n + 1) := by
+  induction n with
+  | zero =>
+    rw [S]
+  | succ i ih =>
+    unfold S
+    -- breaks down 2 * (S i + (i + 1))
+    --           = 2 * S i + 2 * (i + 1)
+    -- and rewrite with `ih`
+    rw [mul_add, ih]
+    ring
 
 /-
   New tactics:
@@ -103,9 +134,8 @@ lemma Sn_two (n : ℕ) : 2*(S n) = n * (n + 1) := by sorry
             about which operations preserve order.
 -/
 example (a b c : ℕ) (h1 : a = b) (h2 : b = 2 * c) : a^2 = (2*c)^2 := by
-  have h3 : a = 2*c := by
-    -- New tactic state: subgoal `a = 2*c`
-    omega
+  have h3 : a = 2 * c
+  · rw [h1, h2]
   rw [h3]
 
 example (a b c : ℕ) (h1 : a ≥ b) (h2 : a = c) : (a - b + b)^2 = c^2 := by
@@ -130,20 +160,38 @@ def factorial : ℕ → ℕ
   | 0 => 1
   | n + 1 => (n + 1) * factorial n
 
+-- 10000 indicates precedence
 notation:10000 n "!" => factorial n
 
 #eval [0!,1!,2!,3!,4!,5!]
 
 -- Exercise 4
 lemma le_fact (n : ℕ) : 1 ≤ (n)! := by
-  sorry
+  induction n with
+  | zero =>
+    unfold factorial
+    rfl
+  | succ i ih =>
+    rw [factorial]
+    grw [←ih]
+    rw [Nat.mul_one]
+    omega
 
-#check Nat.mul_le_mul
-#check pow_succ'
+#check Nat.mul_le_mul -- n₁ ≤ n₂ → m₁ ≤ m₂ → n₁ * m₁ ≤ n₂ * m₂
+#check pow_succ'      -- a ^ (n + 1) = a * a ^ n
 
 -- Exercise 5
-example (n : ℕ) : 2^n ≤ (n+1)! := by sorry
-
+example (n : ℕ) : 2^n ≤ (n+1)! := by
+  induction n with
+  | zero =>
+    trivial
+  | succ n ih =>
+    unfold factorial
+    grw [←ih]
+    rw [pow_succ' 2 n]
+    apply Nat.mul_le_mul
+    · omega
+    · rfl
 
 /-!
 ## Induction for `n ≥ a`
@@ -156,8 +204,10 @@ example (n : ℕ) : 2^n ≤ (n+1)! := by sorry
   In Lean, you can use the `induction n, hn using Nat.le_induction` tactic to do so.
 -/
 
+#check Nat.le_induction
+
 -- The following lemma will be useful for the example
-#check pow_succ
+#check pow_succ -- a ^ (n + 1) = a ^ n * a
 
 -- Example
 example : ∀ n : ℕ, n ≥ 4 → 3 * n ≤ 2^n := by
@@ -165,13 +215,16 @@ example : ∀ n : ℕ, n ≥ 4 → 3 * n ≤ 2^n := by
   induction n, hn using Nat.le_induction with
   | base =>
     -- Goal: `3 * 4 ≤ 2^4`
-    sorry
+    omega
   | succ k hk ih =>
     -- `hk : 4 ≤ k`
     -- `ih : 3 * k ≤ 2^k`
     -- Goal: `3 * (k + 1) ≤ 2^(k + 1)`
-    sorry
-
+    rw [Nat.mul_add]
+    grw [ih]
+    rw [Nat.mul_one]
+    rw [pow_add, pow_one]
+    omega
 
 -- Below is an example proving it using ordinary `induction`
 lemma shifted : ∀ n : ℕ, 3 * (n + 4) ≤ 2^(n + 4) := by
