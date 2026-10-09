@@ -197,7 +197,24 @@ theorem Q4 {α β γ : Type} (f : α → β → γ) (t1 : BinaryTree' α) :
     ∀ t2 : BinaryTree' β,
       mirror (zipWith f t1 t2) =
         zipWith f (mirror t1) (mirror t2) := by
-  sorry
+        induction t1 with
+        | nil =>
+          -- subgoal 1: (zipWith f nil t2).mirror = zipWith f nil.mirror t2.mirror
+          intro t2
+          simp only [zipWith, mirror]
+          -- subgoal 2: (zipWith f (node val left right) t2).mirror =
+          --               zipWith f (node val right.mirror left.mirror) t2.mirror
+        | node val left right h1 h2 =>
+          intro t2
+          match t2 with
+          | .nil => simp only [zipWith, mirror]
+          -- subgoal 2.2:
+          -- in fact these h1,h2 help us to always perform rewrite
+          -- h1: (zipWith f left t2).mirror = zipWith f left.mirror t2.mirror
+          -- h2: (zipWith f right t2).mirror = zipWith f right.mirror t2.mirror
+          | .node val2 left2 right2 =>
+            simp only [zipWith, mirror]
+            rw [h1, h2]
 
 end BinaryTree'
 
