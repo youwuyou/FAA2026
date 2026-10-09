@@ -146,11 +146,12 @@ def mirror {α : Type} : (BinaryTree α) → BinaryTree α
 theorem mirror_mirror {α : Type} (t : BinaryTree α) :
     mirror (mirror t) = t := by
   induction t with
+    -- subgoal 1: mirror (mirror BinaryTree.nil) = BinaryTree.nil
   | nil =>
-    sorry
+    simp only [mirror]
   | node val left right ih_left ih_right =>
-    sorry
-
+    simp only [mirror]
+    rw [ih_left, ih_right]
 
 -- **Exercise 9**
 -- (a) Complete the definition of my_map.
@@ -158,31 +159,59 @@ theorem mirror_mirror {α : Type} (t : BinaryTree α) :
 --     the output list should be [f a1, f a2, f a3, ...]
 def my_map {α β : Type} (f : α → β) : List α → List β
 | [] => []
-| a :: as => sorry
+| a :: as => f a :: my_map f as
 
 -- You can test your my_map function by replacing sorry by rfl
-example : my_map (fun x => x + 1) [1, 2, 3] = [2,3,4] := sorry
-example : my_map (fun s => s.length) ["hello", "a", "world"] = [5,1,5] := sorry
+example : my_map (fun x => x + 1) [1, 2, 3] = [2,3,4] := rfl
+example : my_map (fun s => s.length) ["hello", "a", "world"] = [5,1,5] := rfl
 
-#check Function.comp_apply
+#check Function.comp_apply -- (f ∘ g) x = f (g x)
 
 -- (b) Complete the theorem below on map composition
 theorem map_map_comp {α β γ : Type} (f : α → β) (g : β → γ) (l : List α) :
-  my_map (g ∘ f) l = my_map g (my_map f l) := by sorry
-
+  my_map (g ∘ f) l = my_map g (my_map f l) := by
+  match l with
+  | [] => rfl
+  -- goal: my_map (g ∘ f) (left :: right) = my_map g (my_map f (left :: right))
+  | left :: right =>
+    simp only [my_map, Function.comp_apply]
+    -- g (f left) :: my_map (g ∘ f) right = g (f left) :: my_map g (my_map f right)
+    rw [map_map_comp f g right]
 
 -- **Exercise 10**
 -- (a) Complete the definition of `my_filter`. The filter should remove all elements
 --     that do not satisfy `p`. Hint: use the syntax `if ... then ... else ...`.
 def my_filter {α : Type} (p : α → Bool) : List α → List α
 | [] => []
-| a :: as => sorry
+| a :: as => if p a then a :: my_filter p as else my_filter p as
+
+-- my C++ pseudo-code
+-- template <T>
+-- std::vector<T>* filter(std::function<bool(T)> pred, std::vector<T>* l){
+--   if (l->empty()) return l;
+--   else {
+--     if (pred(*l) == true){
+--       return prepend(*l, filter(pred, l.remaining()));  // keep: a :: filter p as
+--     }
+--     else {
+--       return filter(pred, l.remaining());               // drop:      filter p as
+--     }
+--   }
+-- }
 
 -- You can test your my_filter function by replacing sorry by rfl
-example : my_filter (fun x => x % 2 == 0) [1, 2, 3, 4, 5, 6] = [2,4,6] := by sorry
-example : my_filter (fun x => x > 42) [1, 2, 3, 4, 5, 6, 7] = [] := by sorry
+example : my_filter (fun x => x % 2 == 0) [1, 2, 3, 4, 5, 6] = [2,4,6] := by rfl
+example : my_filter (fun x => x > 42) [1, 2, 3, 4, 5, 6, 7] = [] := by rfl
 
 -- (b) Prove the following theorem
 theorem filter_append {α : Type} (p : α → Bool) (l1 l2 : List α) :
   my_filter p (l1 ++ l2) = (my_filter p l1) ++ (my_filter p l2) := by
-  sorry
+  induction l1 with
+  | nil =>
+      simp [my_filter]
+  | cons x xs tail_ih =>
+      -- one-line proof: by_cases hx : p x <;> simp [my_filter, hx, tail_ih]
+      simp [my_filter]
+      by_cases hx : p x
+      · simp [hx, tail_ih]
+      · simp [hx, tail_ih]
