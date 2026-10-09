@@ -50,8 +50,8 @@ theorem Q1 (n : ℕ) : (sumPowersOfTwo n) + 1 = 2 ^ n := by
   --                  ↓
   --          sumPowersOfTwo i + 2 ^ i
   --
-  -- idea: to change it tothen the `sumPowersOfTwo i` is isolated out,
-  -- as it also occurs in induction hypothesis, we can then close the
+  -- idea: we can isolate the `sumPowersOfTwo i` out,
+  -- as it also occurs in induction hypothesis, then we can close the
   -- remaining terms with omega
   | succ i ih =>
     simp only [sumPowersOfTwo]
@@ -71,7 +71,7 @@ theorem Q2 (n : ℕ) : n ≥ 3 ↔ 2 * n + 2 ≤ 2^n := by
   · intro h
     induction n, h using Nat.le_induction with
     -- base case: to show 2 * 3 + 2 ≤ 2 ^ 3
-    | base => trivial
+    | base => omega
     -- inductive: to show 2 * (m + 1) + 2 ≤ 2 ^ (m + 1)
     | succ m hm ih =>
       simp only [mul_add, mul_one] -- make it linear by just simplifying with * rules
@@ -204,8 +204,8 @@ theorem Q4 {α β γ : Type} (f : α → β → γ) (t1 : BinaryTree' α) :
         | nil =>
           intro t2
           simp only [zipWith, mirror]
-          -- inductive: (zipWith f (node val left right) t2).mirror =
-          --               zipWith f (node val right.mirror left.mirror) t2.mirror
+        -- inductive: (zipWith f (node val left right) t2).mirror =
+        --               zipWith f (node val right.mirror left.mirror) t2.mirror
         | node val left right h1 h2 =>
           intro t2
           match t2 with
