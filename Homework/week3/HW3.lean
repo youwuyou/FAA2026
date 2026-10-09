@@ -42,10 +42,11 @@ def sumPowersOfTwo : ℕ → ℕ
 
 theorem Q1 (n : ℕ) : (sumPowersOfTwo n) + 1 = 2 ^ n := by
   induction n with
+  -- base goal
   | zero =>
     unfold sumPowersOfTwo -- becomes 0 + 1 = 2 ^ 0
     omega                 -- solve directly
-  -- subgoal: sumPowersOfTwo (i + 1) + 1 = 2 ^ (i + 1)
+  -- inductive: sumPowersOfTwo (i + 1) + 1 = 2 ^ (i + 1)
   --                  ↓
   --          sumPowersOfTwo i + 2 ^ i
   --
@@ -69,9 +70,9 @@ theorem Q2 (n : ℕ) : n ≥ 3 ↔ 2 * n + 2 ≤ 2^n := by
   -- subgoal 1: n ≥ 3 → 2 * n + 2 ≤ 2 ^ n
   · intro h
     induction n, h using Nat.le_induction with
-    -- subgoal 1.1: to show 2 * 3 + 2 ≤ 2 ^ 3
+    -- base case: to show 2 * 3 + 2 ≤ 2 ^ 3
     | base => trivial
-    -- subgoal 1.2: to show 2 * (m + 1) + 2 ≤ 2 ^ (m + 1)
+    -- inductive: to show 2 * (m + 1) + 2 ≤ 2 ^ (m + 1)
     | succ m hm ih =>
       simp only [mul_add, mul_one] -- make it linear by just simplifying with * rules
       omega                        -- now omega applicable
@@ -113,11 +114,11 @@ theorem Q3a {α : Type} (xs ys zs : List' α) :
     append xs (append ys zs) = append (append xs ys) zs := by
     -- goal: is to show appending op is associative
     induction xs with
-    -- base goal: nil.append (ys.append zs) = (nil.append ys).append zs
+    -- base: nil.append (ys.append zs) = (nil.append ys).append zs
     | nil =>
       simp only [List'.append]
+    -- inductive goal: cons x (y.append (ys.append zs)) = cons x ((y.append ys).append zs)
     | cons x y z =>
-      -- inductive goal: cons x (y.append (ys.append zs)) = cons x ((y.append ys).append zs)
       simp only [List'.append]
       rw [←z]
 
@@ -130,6 +131,7 @@ theorem Q3b {α : Type} (xs ys : List' α) :
       rw [zero_add]                          -- then zero is unit element in addition
                                              -- P.S. I got a bit of practice for Nat.XX
                                              -- in https://adam.math.hhu.de/ the natural number game
+    -- inductive case
     | cons x y hd =>
       simp only [List'.append, List'.length]
       rw [hd, add_assoc]  -- move parentheses by associativity of addition and we are done
@@ -198,17 +200,18 @@ theorem Q4 {α β γ : Type} (f : α → β → γ) (t1 : BinaryTree' α) :
       mirror (zipWith f t1 t2) =
         zipWith f (mirror t1) (mirror t2) := by
         induction t1 with
+        -- base: (zipWith f nil t2).mirror = zipWith f nil.mirror t2.mirror
         | nil =>
-          -- subgoal 1: (zipWith f nil t2).mirror = zipWith f nil.mirror t2.mirror
           intro t2
           simp only [zipWith, mirror]
-          -- subgoal 2: (zipWith f (node val left right) t2).mirror =
+          -- inductive: (zipWith f (node val left right) t2).mirror =
           --               zipWith f (node val right.mirror left.mirror) t2.mirror
         | node val left right h1 h2 =>
           intro t2
           match t2 with
+          -- base case
           | .nil => simp only [zipWith, mirror]
-          -- subgoal 2.2:
+          -- inductive case:
           -- in fact these h1,h2 help us to always perform rewrite
           -- h1: (zipWith f left t2).mirror = zipWith f left.mirror t2.mirror
           -- h2: (zipWith f right t2).mirror = zipWith f right.mirror t2.mirror
