@@ -208,11 +208,33 @@ def appendT {α : Type} (xs ys : List' α) := (append' xs ys).2
   Hint: Since `append'` is defined using `aux`, it is helpful to first prove
   a stronger statement about `aux` and then reuse it in the two main proofs.
 -/
-
+-- **MyNote:** I am not very sure what theorem helps,
+-- so I will just go prove it directly...
 theorem Q5a {α : Type} (xs ys : List' α) :
     appendE xs ys = append xs ys := by
-  sorry
+      fun_induction append xs ys with
+      -- subgoal 1: xs.appendE ys = xs.append ys
+      | case1 xs =>
+        simp only [appendE, append', aux]
+      | case2 a xs ys ih =>
+        simp only [appendE, append', aux]
+        -- simp?
+        simp only [cons.injEq, true_and]
+        rw [appendE, append'] at ih
+        exact ih
 
 theorem Q5b {α : Type} (xs ys : List' α) :
     appendT xs ys = length xs := by
-  sorry
+      fun_induction length xs with
+      -- goal 1: xs.appendT ys = xs.length
+      | case1 =>
+        simp [appendT, append', aux]
+      | case2 a xs ih =>
+        simp only [appendT, append', aux]
+        simp only [appendT, append'] at ih
+        rw [ih]
+        rw [add_comm]
+
+-- **MyNote:** hi TA, I add a namespace end here
+-- since compiler otherwise complains.
+end List'
