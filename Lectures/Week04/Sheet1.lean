@@ -43,12 +43,14 @@ example : (3.141 : ℝ) + 2.718 = 5.859 := by
 
 example {a b x c d : ℝ} : x ^ 2 * a + c ≤ x ^ 2 * b + d := by
   gcongr
+  -- goal: a ≤ b
   · sorry
+  -- goal: c ≤ d
   · sorry
 
 -- Example on grw/rel/gcongr
 example {a b x c d : ℝ} (h1 : a ≤ b) (h2 : c ≤ d) :
-    x ^ 2 * a + c ≤ x ^ 2 * b + d := by sorry
+    x ^ 2 * a + c ≤ x ^ 2 * b + d := by gcongr
 
 
 example (a b c d : ℝ) (h1 : a < b) (h2 : b ≤ c) : a + d ≤ c + d := by
@@ -79,11 +81,34 @@ theorem power_two_ih_alt (n : ℕ) (ih : 5 ≤ n) (h : 2 ^ n > n ^ 2) : 2 ^ (n +
 
 -- Exercise 1
 -- try without omega
-theorem power_two_linear (n : ℕ) (ih : 3 ≤ n) (h : 2*n < 2^n) : 2*(n+1) < 2^(n+1) := by sorry
+theorem power_two_linear (n : ℕ) (ih : 3 ≤ n) (h : 2 * n < 2 ^ n) : 2*(n+1) < 2^(n+1) := by
+  -- goal: 2 * (n + 1) < 2 ^ (n + 1)
+  -- ih : 3 ≤ n
+  -- h : 2 * n < 2 ^ n
+  calc 2 * (n + 1) = 2 * n + 2 := by ring
+                _  < 2 ^ n + 2 := by gcongr
+                _  ≤ 2 ^ n + 2 ^ n := by gcongr; linarith
+                _   = 2 ^ (n + 1) := by ring
 
 -- Exercise 2
 -- prove this without omega
-example (n:ℕ ) (h: 5 ≤ n): 1 + n * 2 < 5*n := by sorry
+example (n : ℕ) (h : 5 ≤ n) : 1 + n * 2 < 5 * n := by
+  -- goal: 1 + n * 2 < 5 * n
+  -- h : 5 ≤ n
+  calc 1 + n * 2 < n + n * 2 := by gcongr; linarith
+              _  < 5 * n     := by linarith
 
 -- Exercise 3
-example : ∀ n > 0 , 3 ^ n > n ^ 2 := by sorry
+example : ∀ n > 0 , 3 ^ n > n ^ 2 := by
+  intro n hn
+  -- goal: 3 ^ n > n ^ 2
+  induction n, hn using Nat.le_induction with
+  -- base:       3 ^ Nat.succ 0 > Nat.succ 0 ^ 2
+  | base =>
+    rw [Nat.succ_eq_add_one]
+    omega
+  -- inductive:  3 ^ (k + 1) > (k + 1) ^ 2
+  --        ih : 3 ^ k > k ^ 2
+  | succ k hk ih =>
+    rw [Nat.pow_add, pow_one]
+    nlinarith [ih, hk]
