@@ -181,7 +181,8 @@ def length {α : Type} : List' α → ℕ
   | cons _ xs => 1 + length xs
 
 /-
-  A tuple type `A × B` (type "\times" or "\x") is a type of tuples `(a, b)` such that `a : A` and `b : B`.
+  A tuple type `A × B` (type "\times" or "\x") is
+  a type of tuples `(a, b)` such that `a : A` and `b : B`.
 
   Consider the following definition of append', which returns a tuple `(zs, t)`.
   * `zs` is a list, and it is the same as `append xs ys`.
