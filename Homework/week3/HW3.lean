@@ -41,7 +41,20 @@ def sumPowersOfTwo : ℕ → ℕ
   | n + 1 => sumPowersOfTwo n + 2 ^ n
 
 theorem Q1 (n : ℕ) : (sumPowersOfTwo n) + 1 = 2 ^ n := by
-  sorry
+  induction n with
+  | zero =>
+    unfold sumPowersOfTwo -- becomes 0 + 1 = 2 ^ 0
+    omega                 -- solve directly
+  -- subgoal: sumPowersOfTwo (i + 1) + 1 = 2 ^ (i + 1)
+  --                  ↓
+  --          sumPowersOfTwo i + 2 ^ i
+  --
+  -- idea: to change it tothen the `sumPowersOfTwo i` is isolated out,
+  -- as it also occurs in induction hypothesis, we can then close the
+  -- remaining terms with omega
+  | succ i ih =>
+    simp only [sumPowersOfTwo]
+    omega
 
 /-!
   Exercise 2
@@ -52,8 +65,25 @@ theorem Q1 (n : ℕ) : (sumPowersOfTwo n) + 1 = 2 ^ n := by
   Hint: Pattern matching may be useful.
 -/
 theorem Q2 (n : ℕ) : n ≥ 3 ↔ 2 * n + 2 ≤ 2^n := by
-  sorry
-
+  constructor
+  -- subgoal 1: n ≥ 3 → 2 * n + 2 ≤ 2 ^ n
+  · intro h
+    induction n, h using Nat.le_induction with
+    -- subgoal 1.1: to show 2 * 3 + 2 ≤ 2 ^ 3
+    | base => trivial
+    -- subgoal 1.2: to show 2 * (m + 1) + 2 ≤ 2 ^ (m + 1)
+    | succ m hm ih =>
+      simp only [mul_add, mul_one] -- make it linear by just simplifying with * rules
+      omega                        -- now omega applicable
+  -- subgoal 2: 2 * n + 2 ≤ 2 ^ n → n ≥ 3
+  · intro h
+    -- here we check each case with n = 0,1,2 leading to some impossible
+    -- inequalities, then conclude
+    match n, h with
+    | 0,     h => contradiction
+    | 1,     h => contradiction
+    | 2,     h => contradiction
+    | k + 3, _ => omega
 
 /-
   Consider the following definition of List'
