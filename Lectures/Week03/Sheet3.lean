@@ -33,26 +33,39 @@ Mathlib’s built-in version, written `++`.
 #eval List.append [1, 2, 3] [4, 5, 6]
 #eval [1,2,3] ++ [4,5,6]
 
+-- **MyNote:** small summary for the mathlib version
+-- type: List
+-- · nils ↔ []
+-- · cons head rest ↔ head :: rest
+-- fucntions use:
+-- · append l1 l2  ↔ l1 ++ l2
 
 -- Compute the length of a list
 def len {α : Type} : List α → ℕ
 | []      => 0
 | _ :: xs => 1 + len xs
 
-#check List.nil_append
-#check List.cons_append
+#check List.nil_append   -- [] ++ as = as
+#check List.cons_append  -- a :: as ++ bs = a :: (as ++ bs)
 
 -- ## Induction over lists
 theorem len_append_induction {α : Type} (x : α) (l : List α) : len (l ++ [x]) = 1 + len l  := by
+  -- overall goal: len (l ++ [x]) = 1 + len l
   induction l with
   | nil =>
     -- Base case: prove the claim for empty list []
-    sorry
+    rw [List.nil_append]
+    rw [len, Nat.add_zero]
+    rw [len, len, Nat.add_zero]
   | cons y ys tail_ih =>
     -- Induction step `l = y :: ys`, `y : α`, `ys : List α`
     -- Hypothesis `tail_ih`: claim holds for tail `ys`
     -- Goal: show that the claim holds for `y :: ys`
-    sorry
+    -- aka. `len (y :: ys ++ [x]) = 1 + len (y :: ys)`
+    rw [List.cons_append]
+    unfold len
+    rw [Nat.one_add, Nat.one_add]
+    rw [tail_ih]
 
 -- Alternative proof by recursion
 theorem len_append' {α : Type} (x : α) (l : List α) : len (l ++ [x]) = 1 + len l  := by
