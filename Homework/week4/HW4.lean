@@ -74,19 +74,33 @@ theorem Q2 (n : ℕ) : halvingWork n ≤ 2 * n := by
   Hint: You can supply arguments to `linarith`, `nlinarith`, `gcongr` in `[...]`,
   like when using `simp [...]`.
 -/
-#check sq_nonneg
+#check sq_nonneg -- 0 ≤ s ^ 2
 
 -- (a)
 -- Hint: First think about on paper how to rewrite (a + b) ^ 2 suitably to bring
 -- it close to the right-hand side.
+--
+-- **MyNote:** note that
+--   0 ≤ s ^ 2 if plug in s := a - b
+-- ⇔ 0 ≤ (a - b) ^ 2 = a^2 - 2ab + b^2
+-- ⇔ 2ab ≤ a^2 + b^2
 theorem Q3a (a b : ℤ) :
     (a + b) ^ 2 ≤ 2 * a ^ 2 + 2 * b ^ 2 := by
-  sorry
+          -- goal: (a + b) ^ 2 ≤ 2 * a ^ 2 + 2 * b ^ 2
+          calc (a + b) ^ 2 = a ^ 2 + (2 * a * b) + b ^ 2 := by ring
+                        -- Next, use (2 * a * b) ≤ a² + b²
+                        _  ≤ a ^ 2 + (a ^ 2 + b ^ 2) + b ^ 2 := by nlinarith [sq_nonneg (a - b)]
+                        _  = 2 * a ^ 2 + 2 * b ^ 2 := by ring
 
 -- (b)
 theorem Q3b (a b c : ℤ) :
     (a + b + c) ^ 2 ≤ 4 * (a ^ 2 + b ^ 2 + c ^ 2) := by
-  sorry
+    -- goal: (a + b + c) ^ 2 ≤ 4 * (a ^ 2 + b ^ 2 + c ^ 2)
+    calc (a + b + c) ^ 2 = (a + (b + c)) ^ 2 := by ring
+                      _  ≤  2 * a ^ 2 + 2 * (b + c) ^ 2 := Q3a a (b + c)
+                      _  =  2 * (a ^ 2 + (b + c) ^ 2) := by ring
+                      _  ≤  2 * (a ^ 2 + (2 * b ^ 2 + 2 * c ^ 2)) := by gcongr; exact Q3a b c
+                      _  ≤ 4 * (a ^ 2 + b ^ 2 + c ^ 2) := by nlinarith [sq_nonneg a]
 
 /-!
   **Exercise 4**
