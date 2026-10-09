@@ -125,6 +125,8 @@ def zipWith {α β γ : Type} (f : α → β → γ) : List α → List β → L
 
 def tripleZipWith {α β γ δ : Type} (f : α → β → γ → δ)
   : List α → List β → List γ → List δ
+  -- **MyNote:** In proof of Q4 I will consistently refer with names
+  -- `xs` `ys` `zs`
   | [], _, _ => []
   | _, [], _ => []
   | _, _, [] => []
@@ -134,8 +136,32 @@ theorem Q4 {α β γ δ : Type} (f : α → β → γ → δ)
     (xs : List α) (ys : List β) (zs : List γ) :
     tripleZipWith f xs ys zs = zipWith (fun (g : γ → δ) (y : γ) ↦ g y) (zipWith f xs ys) zs
     := by
-    sorry
-
+    -- **goal:** tripleZipWith f xs ys zs = zipWith (fun g y ↦ g y) (zipWith f xs ys) zs
+    fun_induction tripleZipWith f xs ys zs with
+    -- **case 1:** [] = zipWith (fun g y ↦ g y) (zipWith f [] ys) zs
+    -- note that zipWith does not allow any argument to be empty
+    -- thus the `[]` propagates, rewrite twice gives us `[] = []`
+    -- **case 2:** similarly, but now argument takes one more hypothesis `h1`
+    -- indicates case 1 failed.
+    -- **case 3:** this gets a bit tricky, so similar we shall know h1, h2 both
+    -- indicate `xs` and `ys` are non-empty
+    -- we need to do case distinction on whether `zs` is empty
+    | case1 ys zs =>
+      rw [zipWith, zipWith]
+    | case2 xs zs h1 =>
+      rw [zipWith, zipWith]
+      exact h1
+    | case3 xs ys h1 h2 =>
+      cases zipWith f xs ys with
+      -- both can be concluded quickly by noticing empty `[]` occur in
+      -- application on zipWith
+      | nil      => simp only [zipWith]
+      | cons left right => simp only [zipWith]
+    -- **case 4.** here we simplify first then see the inductive hypothesis
+    -- can directly rewrite LHS
+    | case4 x xs y ys z zs ih =>
+      simp only [zipWith]
+      rw [ih]
 
 /-
   Consider the following definition of List'
