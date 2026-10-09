@@ -148,14 +148,19 @@ theorem len_append_fun_induction_oneline (x : ℕ) (l : List ℕ) : len (l ++ [x
 -- b: the initial base value (accumulator)
 
 def my_foldl {α β : Type} (f : β → α → β) (b : β) : List α → β
+-- base case:
 | [] => b
-| a :: as => sorry
+-- inductive: apply recursively, with same `f` combining func, `(f b a)` accumulates
+-- for current iteration, and further applied to the rest `as`.
+| a :: as => my_foldl f (f b a) as
 
-example: my_foldl (fun acc x => acc + x) 0 [1, 2, 3, 4] = 10 := sorry
-example: my_foldl (fun acc x => x :: acc) ([] : List Nat) [1, 2, 3] = [3, 2, 1] := sorry
+example : my_foldl (fun acc x => acc + x) 0 [1, 2, 3, 4] = 10 := rfl
+example : my_foldl (fun acc x => x :: acc) ([] : List Nat) [1, 2, 3] = [3, 2, 1] := rfl
 
 -- Theorem
 theorem foldl_append {α β : Type} (f : β → α → β) (b : β) (l1 l2 : List α) :
+  -- goal : my_foldl f b (l1 ++ l2) = my_foldl f (my_foldl f b l1) l2
   my_foldl f b (l1 ++ l2) = my_foldl f (my_foldl f b l1) l2 := by
+    -- changed goal: my_foldl f b (l1 ++ l2) = my_foldl f (my_foldl f b l1) l2
     revert b
     sorry

@@ -38,6 +38,21 @@ example (x : ℕ) : fib x ≤ 2^x := by
     · omega
     · omega
 
+-- **MyNote:** It seems like `fun_induction` is the functional analogy
+-- of `match`, it is introduced in sheet 3 but let me put an example here.
+
+example (x : ℕ) : fib x ≤ 2^x := by
+  -- overall goal: fib x ≤ 2 ^ x
+  fun_induction fib x with
+  | case1 =>
+    rw [pow_zero] -- 1 ≤ 2 ^ 0 sorry
+  | case2 =>
+    rw [pow_one]  -- 1 ≤ 2 ^ 1 sorry
+    norm_num
+  | case3 n ih1 ih2 =>
+    grw [ih1, ih2]
+    omega
+
 #check Nat.twoStepInduction
 
 -- Exercise 3
