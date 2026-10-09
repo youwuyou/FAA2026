@@ -57,10 +57,18 @@ example (x : ℕ) : fib x ≤ 2^x := by
 
 -- Exercise 3
 example (x : ℕ) : fib x ≤ 2^x := by
-  induction x using Nat.twoStepInduction
-  · simp [fib]
-  · simp [fib]
-  · sorry
+  -- overall goal: fib x ≤ 2 ^ x
+  induction x using Nat.twoStepInduction with
+  -- subgoal 1: fib 0 ≤ 2 ^ 0
+  | zero =>
+    simp [fib]
+  | one =>
+    simp [fib]
+  | more =>
+    simp only [fib]
+    grw [a_1, a]
+    ring
+    omega
 
 -- Define the following recurrence relation
 -- f (n) ≤ n + 2* f(n/2)
