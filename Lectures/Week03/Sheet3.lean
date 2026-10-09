@@ -69,12 +69,26 @@ theorem len_append_induction {α : Type} (x : α) (l : List α) : len (l ++ [x])
 
 -- Alternative proof by recursion
 theorem len_append' {α : Type} (x : α) (l : List α) : len (l ++ [x]) = 1 + len l  := by
+  -- overall goal: len (l ++ [x]) = 1 + len l
   match l with
-  | []  => rfl
-  | y :: ys =>
-    simp only [List.cons_append,len]
+  -- case 1 (l = []): len ([] ++ [x]) = 1 + len []
+  | [] =>
+    rw [List.nil_append]
+    rw [len, len, len]
+  -- case 2: len (left :: right ++ [x]) = 1 + len (left :: right)
+  | left :: right =>
+    rw [List.cons_append]
+    unfold len
+    -- to remove the leading 1+
+    -- 1 + len (right ++ [x]) = 1 + (1 + len right)
+    ---------------------------------------------
+    -- goal becomes len (right ++ [x]) = 1 + len right
     simp only [Nat.add_left_cancel_iff]
-    apply len_append' -- recursive call on the structurally smaller list `ys`
+    -- goal is now the theorem itself at the smaller list `right`:
+    --   len (right ++ [x]) = 1 + len right
+    -- `right ≺ left :: right` is a strict subterm ⇒ termination checker accepts
+    -- the recursive call; it plays the role of the induction hypothesis.
+    apply len_append'
 
 -- Another proof by recursion using cases instead of pattern matching
 theorem len_append_cases {α : Type} (x : α) (l : List α) : len (l ++ [x]) = 1 + len l  := by
