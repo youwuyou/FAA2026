@@ -221,7 +221,11 @@ theorem Q4 {α β γ : Type} (f : α → β → γ) (t1 : BinaryTree' α) :
 
 end BinaryTree'
 
-namespace RegEx
+
+-- **MyNote:** hi TA(s), I got warning with the `RegEx` namespace you provided:
+-- "The namespace `RegEx` is duplicated in the declaration `RegEx.RegEx.epsilon`."
+-- thus I changed it to `MyRegEx` to not have warnings.
+namespace MyRegEx
 
 /-
 Exercise 5
@@ -230,7 +234,8 @@ A (simplified) regular expression over symbols of type `α` is one of the follow
 - **epsilon**: ε, which matches the empty word ""
 - **symbol**:  a single symbol of type `α`, e.g. 'a' (when the symbols are characters)
 - **choice**:  choice between two regular expressions, e.g. 'a' | ε
-- **concat**:  concatenation of two regular expression, e.g. concatenating 'a' and "bc*" gives "abc*"
+- **concat**:  concatenation of two regular expression, e.g. concatenating 'a'
+              and "bc*" gives "abc*"
 - **star**:    the repetition of a regular expression *zero or more* times, e.g. "a*", which matches
                "", "a", "aa", "aaa", ...
 
@@ -244,9 +249,54 @@ Task (2) Complete the definition of the function acceptsEmptyWord.
          We encourage you to write some testcases using #eval to
          check your implementation.
 -/
-
 inductive RegEx (α : Type) where -- Task (1)
+| epsilon : RegEx α
+| symbol (a : α) : RegEx α
+| choice (c1 : RegEx α) (c2 : RegEx α) : RegEx α
+| concat (left : RegEx α) (right : RegEx α) : RegEx α
+| star (a : RegEx α) : RegEx α
 
-def acceptsEmptyWord {α : Type} : RegEx α → Bool := sorry -- Task (2)
+def acceptsEmptyWord {α : Type} : RegEx α → Bool -- Task (2)
+-- base cases:
+| .epsilon => Bool.true
+| .symbol _ => Bool.false
+-- Composite cases:
+-- ➊ choice: if any of the choice is empty regex, we could always pick one
+-- ➋ concat: concatenation may make left or right "lose" emptiness,
+-- we thus enforce a logical AND
+-- ➌ star: here we may always repeat just "Zero" time
+| .choice c1 c2 => acceptsEmptyWord c1 || acceptsEmptyWord c2
+| .concat left right => acceptsEmptyWord left && acceptsEmptyWord right
+| .star _ => Bool.true
 
-end RegEx
+
+-------------------------------------------------------------------------------------
+-- **MyTests:** I picked some examples from the wikipedia
+-- (https://en.wikipedia.org/wiki/Regular_expression#Formal_language_theory)
+-- P.S. and I find the example ... rfl check a bit nicer so am not using `#eval` here
+-------------------------------------------------------------------------------------
+-- Example 1: a|b*
+-- a|b* = {ε, "a", "b", "bb", "bbb", ...}, thus we have ε (`true`)
+example : acceptsEmptyWord (.choice (.symbol 'a') (.star (.symbol 'b'))) = true := rfl
+
+-- Example 2:
+-- (a|b)* = {ε, "a", "b", "aa", "ab", "ba", "bb", "aaa", ...}, thus we have ε (`true`)
+example : acceptsEmptyWord (.star (.choice (.symbol 'a') (.symbol 'b'))) = true := rfl
+example : acceptsEmptyWord (.star (.symbol 'b')) = true := rfl
+
+-- Example 3:
+-- ab*(c|ε) = {"a", "ac", "ab", "abc", "abb", "abbc", ...}, no ε (`false`)
+example : acceptsEmptyWord (.concat (.symbol 'a')
+         (.concat (.star (.symbol 'b')) (.choice (.symbol 'c') .epsilon))) = false := rfl
+
+-- Example 4:
+-- (0|(1(01*0)*1))* = { ε, "0", "00", "11", "000", "011", "110",
+--                     "0000", "0011", "0110", "1001", "1100", "1111", "00000", ...}
+-- this has star in outer expression, we also see ε is here (`true`)
+example : acceptsEmptyWord (.star (.choice (.symbol '0')
+         (.concat (.symbol '1')
+           (.concat (.star (.concat (.symbol '0') (.concat (.star (.symbol '1')) (.symbol '0'))))
+                    (.symbol '1'))))) = true := rfl
+
+-- **MyNote:** end of name space
+end MyRegEx
