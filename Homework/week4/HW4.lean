@@ -36,8 +36,16 @@ def oddSum : ℕ → ℕ
   | n + 1 => oddSum n + (2 * n + 1)
 
 theorem Q1 (n : ℕ) : oddSum n = n ^ 2 := by
-  sorry
-
+  -- overall goal: oddSum n = n ^ 2
+  fun_induction oddSum n with
+  | case1 =>
+    rw [pow_two, zero_mul]   -- to show: 0 = 0 ^ 2
+  | case2 n ih =>    -- to show: oddSum n + (2 * n + 1) = n.succ ^ 2
+    -- directly use inductive hypothesis
+    -- then notice n ^ 2 + (2 * n + 1) = (n + 1) ^ 2
+    -- is nonlinear but shall be solvable
+    rw [ih, Nat.succ_eq_add_one]
+    nlinarith
 
 /-!
   **Exercise 2**
