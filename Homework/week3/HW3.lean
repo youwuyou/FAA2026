@@ -111,11 +111,28 @@ def length {α : Type} : List' α → ℕ
 -/
 theorem Q3a {α : Type} (xs ys zs : List' α) :
     append xs (append ys zs) = append (append xs ys) zs := by
-  sorry
+    -- goal: is to show appending op is associative
+    induction xs with
+    -- base goal: nil.append (ys.append zs) = (nil.append ys).append zs
+    | nil =>
+      simp only [List'.append]
+    | cons x y z =>
+      -- inductive goal: cons x (y.append (ys.append zs)) = cons x ((y.append ys).append zs)
+      simp only [List'.append]
+      rw [←z]
 
 theorem Q3b {α : Type} (xs ys : List' α) :
     length (append xs ys) = length xs + length ys := by
-  sorry
+    induction xs with
+    -- base: (nil.append ys).length = nil.length + ys.length
+    | nil =>
+      simp only [List'.append, List'.length] -- just use definition
+      rw [zero_add]                          -- then zero is unit element in addition
+                                             -- P.S. I got a bit of practice for Nat.XX
+                                             -- in https://adam.math.hhu.de/ the natural number game
+    | cons x y hd =>
+      simp only [List'.append, List'.length]
+      rw [hd, add_assoc]  -- move parentheses by associativity of addition and we are done
 
 end List'
 
