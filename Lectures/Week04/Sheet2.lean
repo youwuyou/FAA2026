@@ -108,4 +108,30 @@ def g_close (n : ℕ) : ℕ  :=  Nat.log 2 n + 1
 #eval (List.map g [0,1,2,3,4,5,6,7,8,1000])
 #eval (List.map g_close [0,1,2,3,4,5,6,7,8,1000])
 
-example (n : ℕ) : g (2^n) ≤ n+1 := by sorry
+example (n : ℕ) : g (2^n) ≤ n+1 := by
+  -- overall goal: g (2 ^ n) ≤ n + 1
+  induction n using Nat.twoStepInduction with
+  -- case 1: g (2 ^ n) ≤ n + 1
+  | zero => simp [g]
+  | one => simp [g]
+  | more n ih ih' =>
+    unfold g
+    rw [Nat.pow_add_one']
+    split
+    · omega
+    · rw [Nat.mul_div_right _ Nat.zero_lt_two]
+      grw [ih']
+
+-- Same statement via strong induction: ih : ∀ m, m < n → g (2^m) ≤ m+1
+example (n : ℕ) : g (2^n) ≤ n+1 := by
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    cases n with
+    | zero => simp [g]
+    | succ k =>
+      unfold g
+      rw [Nat.pow_add_one']                      -- 2^(k+1) = 2 * 2^k
+      split
+      · omega                                    -- then-branch: 0 ≤ k+1+1
+      · rw [Nat.mul_div_right _ Nat.zero_lt_two] -- 2 * 2^k / 2 = 2^k
+        grw [ih k (Nat.lt_succ_self k)]          -- use ih at m = k, since k < k+1
