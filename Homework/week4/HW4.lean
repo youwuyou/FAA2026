@@ -65,7 +65,33 @@ def halvingWork : ℕ → ℕ
 -- [0, 1, 3, 4, 7, 15, 31]
 
 theorem Q2 (n : ℕ) : halvingWork n ≤ 2 * n := by
-  sorry
+  -- overall goal: halvingWork n ≤ 2 * n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    cases n with
+    -- subgoal 1: halvingWork 0 ≤ 2 * 0
+    | zero =>
+      rw [halvingWork]
+    -- subgoal 2: halvingWork (k + 1) ≤ 2 * (k + 1)
+    | succ k =>
+      -- unfold halvingWork
+      -- goal 2': k + 1 + halvingWork ((k + 1) / 2) ≤ 2 * (k + 1)
+      unfold halvingWork
+      -- inductive hypothesis states:
+      --     ∀ m < k + 1, halvingWork m ≤ 2 * m
+      ------------------------------------------
+      -- For m := (k + 1) / 2, this fulfills predicate and thus
+      --                halvingWork ((k+1)/2) < k + 1
+      -- we call this result `hm`.
+      have hm : (k + 1) / 2 < k + 1 := by
+        omega
+      ------------------------------------------
+      -- now we obtain
+      --       halvingWork ((k+1)/2) < k + 1
+      -- seeing the final goal has this as part of it
+      -- we may directly use omega to solve
+      have h_ih := ih ((k + 1) / 2) hm
+      omega
 
 /-!
   **Exercise 3**

@@ -78,16 +78,45 @@ lemma P_le_fact' (a b : ℕ) : P a b ≤ (a+b)! := by
   · simp [fact]
   · rename' a_1 => a, b_1 => b
     calc
-      P (a + 1) b + P a (b + 1) ≤ (a + 1 + b) ! + (a + (b + 1)) !                            := by gcongr
-                              _ ≤ (a + b) * (a + b + 1) ! + (a + 1 + b) ! + (a + (b + 1)) !  := by omega
-                              _ = ((a + b + 1) + 1) * (a + b + 1)!                           := by ring_nf
-                              _ = ((a + b + 1) + 1)!                                         := by bound
-                              _ = (a + 1 + (b + 1))!                                         := by ring_nf
+      P (a + 1) b + P a (b + 1) ≤ (a + 1 + b) ! + (a + (b + 1)) !                      := by gcongr
+                        _ ≤ (a + b) * (a + b + 1) ! + (a + 1 + b) ! + (a + (b + 1)) !  := by omega
+                        _ = ((a + b + 1) + 1) * (a + b + 1)!                           := by ring_nf
+                        _ = ((a + b + 1) + 1)!                                         := by bound
+                        _ = (a + 1 + (b + 1))!                                         := by ring_nf
 
 
 -- # Exercise 5
+-- **MyNote:** recall the definition of `factorial` from before,
+-- which was recursively defined.
+-- def factorial : ℕ → ℕ
+--   | 0 => 1
+--   | n + 1 => (n + 1) * factorial n
+
 def isEven (n : ℕ) : Prop := ∃ k, n = 2*k
-theorem isEven_iff (n : ℕ) : isEven (n)! ↔ n ≥ 2 := by sorry
+theorem isEven_iff (n : ℕ) : isEven (n)! ↔ n ≥ 2 := by
+  -- overall goal: isEven n ! ↔ n ≥ 2
+  unfold isEven
+  fun_induction factorial n with
+  -- subgoal 1: isEven 1 ↔ 0 ≥ 2
+  | case1 =>
+    constructor
+    · intro h
+      omega
+    -- subgoal 2: 0 ≥ 2 → ∃ k, 1 = 2 * k
+    · intro h
+      contradiction
+  -- subgoal 2: isEven ((n_1 + 1) * n_1 !) ↔ n_1.succ ≥ 2
+  | case2 =>
+    constructor
+    -- goal: (∃ k, (n_1 + 1) * n_1 ! = 2 * k) → n_1.succ ≥ 2
+    · ring
+      simp only [Nat.succ_eq_add_one, ge_iff_le, Nat.reduceLeDiff, forall_exists_index]
+      intro m
+      obtain ⟨n, hn⟩ := ih1
+      sorry
+      -- omega
+    -- goal: n_1.succ ≥ 2 → ∃ k, (n_1 + 1) * n_1 ! = 2 * k
+    · sorry
 
 
 -- # Exercise 6
