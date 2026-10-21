@@ -22,3 +22,8 @@ rev = "v4.33.1"
 [[lean_lib]]
 name = "Lectures"
 globs = ["Lectures.+"]
+
+[[require]]
+name = "waterfall"
+git = "https://github.com/samth/waterfall.git"
+rev = "v0.2.0"

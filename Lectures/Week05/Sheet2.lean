@@ -77,3 +77,12 @@ theorem sorted_is_preserved_by_min_cons {a : ℕ} {t : List ℕ} (hmin : a.MinOf
 -- merge [2, 4, 4, 8] [1, 5, 8, 9] = [1, 2, 4, 4, 5, 8, 8, 9]
 
 def merge: List ℕ → List ℕ → List ℕ := sorry
+
+
+lemma minOfList_merge {a : ℕ} {l1 l2 : List ℕ} (h1 : a.MinOfList l1) (h2 : a.MinOfList l2) :
+  a.MinOfList (merge l1 l2) := by
+    sorry
+
+theorem sorted_is_preserved_by_merge {l1 l2 : List ℕ} (h1 : Sorted l1) (h2 : Sorted l2) :
+  Sorted (merge l1 l2) := by
+    sorry
