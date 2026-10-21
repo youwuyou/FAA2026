@@ -6,7 +6,6 @@ Authors: Sorrachai Yingchareonthawornchai
 
 import Mathlib.Tactic
 import Lectures.Week06.API
-import Waterfall
 
 set_option autoImplicit false
 set_option tactic.hygienic false
