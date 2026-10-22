@@ -153,9 +153,85 @@ def lookup (q : ℕ) : BinaryTree → Bool
       else if value < q then lookup q r
       else true
 
+-- **MyQuestion:** Am I doing anything wrong? This proof is absurdly long??
+-- I think I perhaps miss some useful tactics that I should use here instead
 theorem lookup_correct (q : ℕ) {t : BinaryTree} (ht : IsBST t) :
-    lookup q t = true ↔ q ∈ inorder t := by
-  sorry
+  lookup q t = true ↔ q ∈ inorder t := by
+  induction ht with
+  -- subgoal 1: `lookup q BinaryTree.nil = true ↔ q ∈ inorder BinaryTree.nil`
+  | nil =>
+    simp only [lookup, inorder]
+    -- break down into two cases to show
+    -- both are trivially contradictory assumptions
+    constructor
+    -- case 1.1: false = true → q ∈ []
+    -- case 1.2: q ∈ [] → false = true
+    · intro h; contradiction
+    · intro h; contradiction
+  -------------------------------------------
+  -- subgoal 2:
+  --   lookup q (BinaryTree.node value l r) = true
+  -- ↔ q ∈ inorder (BinaryTree.node value l r)
+  | node =>
+    expose_names
+    constructor
+    -- (→) direction
+    · intro h
+      simp_all only [inorder, List.mem_append, List.mem_cons]
+      -- **MyNotes:**
+      ----------- REWRITING GOAL ------------------------------------
+      -- either ➊ q ∈ inorder l
+      -- or ➋ q = value
+      -- or ➌ q ∈ inorder r
+      rw [lookup] at h
+      ----------- CASE SPLIT ASSUMPTIONS ----------------------------
+      -- Here I used `split_ifs` from the provided cheatsheet
+      -- https://leanprover-community.github.io/papers/lean-tactics.pdf
+      -- I tried cases h, by_cases etc., but found them not very satisfying
+      -- so I use the one from cheatsheet now.
+      -------------------------------------------------------------------
+      -- case for (q ∈ inorder l) ∨ (q = value ∨ q ∈ inorder r)
+      --               |               |                  |
+      --              ➊ left          ➋ right; left      ➌ right; right
+      -------------------------------------------------------------------
+      split_ifs at h with h_l h_r
+      -- for ➊: q ∈ inorder l, we use h_l : q < value
+      · left
+        exact bst_left_ih.mp h -- apply bst_left_ih using only (→) direction
+      -- for ➌: q ∈ inorder r, the other way
+      · right
+        right
+        exact bst_right_ih.mp h
+      -- for ➋: q = value
+      -- since not larger nor smaller then must equal, we close with omega
+      · right
+        left
+        omega
+    -- (←) direction
+    · intro h
+      simp only [inorder, List.mem_append, List.mem_cons] at h
+      rw [lookup]
+      ----------- CASE SPLIT GOAL -----------------------------------
+      split_ifs with h_l h_r
+      -- goal 1: lookup q l = true
+      · apply bst_left_ih.mpr
+        cases h with
+        | inl h_inl => trivial -- by hypothesis directly
+        | inr h_eq_inr =>
+          cases h_eq_inr with
+          | inl h_eq => omega
+          | inr h_inr => linarith [hright q h_inr]
+      -- goal 2: lookup q r = true
+      -- similar to goal 1 but just swap positions
+      · apply bst_right_ih.mpr
+        cases h with
+        | inr h_eq_inr =>
+          cases h_eq_inr with
+          | inl h_eq => omega
+          | inr h_inr => exact h_inr
+        | inl h_inl => linarith [hleft q h_inl]
+      -- goal 3: already true
+      · rfl
 
 
 /-!
