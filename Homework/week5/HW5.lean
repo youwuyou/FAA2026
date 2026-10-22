@@ -247,7 +247,12 @@ inductive Sorted : List ℕ  → Prop
 
 -- **(a)** Prove the following lemma.
 lemma sorted_a_b (a b : ℕ) (l : List ℕ) (h : Sorted (a :: b :: l)) : a ≤ b := by
-  sorry
+  -- we need to split `h : Sorted (a :: b :: l)`
+  cases h <;> expose_names
+  -- case 1: just trivial
+  · exact h
+  -- case 2: we found the above by using `simp_all?` directly
+  · simp_all only [Nat.MinOfList, List.mem_cons, forall_eq_or_imp]
 
 -- **(b)** Prove the following lemma.
 lemma sorted_append (x : ℕ) (l1 l2 : List ℕ) (h1 : Sorted l1) (h2 : Sorted l2)
