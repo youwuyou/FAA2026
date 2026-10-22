@@ -43,6 +43,10 @@ inductive Matches {α : Type} : RegEx α → List α → Prop where
   | epsilon : Matches .epsilon []
   -- `symbol a` matches the singleton list `[a]`
   | symbol (a : α) : Matches (.symbol a) [a]
+  ------------------------------------------------------------
+  -- **MyNote:** in the following are rules in the form that
+  -- `Matches r1 w = regex r1 matches word w`
+  ------------------------------------------------------------
   -- If `r1` matches a word `w`, then `choice r1 r2` matches `w`
   | choice_left {r1 r2 : RegEx α} {w : List α} :
       Matches r1 w → Matches (.choice r1 r2) w
@@ -62,14 +66,62 @@ inductive Matches {α : Type} : RegEx α → List α → Prop where
 
 -- **(a)** Fill in the definition of the rename function, which should
 -- replace every `a : α` by `f a : β`.
+-- *MyQuestion:* it seems like we need to repeat a lot here for choice, concat, star
+-- although they just follow the simple pattern of composing functions. Is there a way
+-- to avoid repeating the code here?
 def rename {α β : Type} (f : α → β) : RegEx α → RegEx β
-  := sorry
+  -- base cases: epsilon is special so no rename, then
+  | RegEx.epsilon => RegEx.epsilon
+  | RegEx.symbol a => RegEx.symbol (f a)
+  -- composite cases: rename each argument using `rename f` and then use definitions
+  | RegEx.choice r1 r2 => RegEx.choice (rename f r1) (rename f r2)
+  | RegEx.concat r1 r2 => RegEx.concat (rename f r1) (rename f r2)
+  | RegEx.star r => RegEx.star (rename f r)
 
 -- **(b)** Prove the following theorem.
 theorem matches_rename {α β : Type} (f : α → β) {r : RegEx α} {w : List α}
-    (h : Matches r w) : Matches (rename f r) (List.map f w) := by
-  sorry
-
+  (h : Matches r w) : Matches (rename f r) (List.map f w) := by
+  -- overall goal: to show `Matches (rename f r) (List.map f w)`
+  induction h with
+  -- 1. epsilon: here no renaming was used so trivially proved
+  |  epsilon => exact Matches.epsilon
+  -- 2. symbol: here the symbol is renamed, we take the renaming rule `f` and again match
+  |  symbol a => exact Matches.symbol (f a)
+  ------------------------------------------------
+  -- 3. choice_left, choice_right; here we shall see
+  -- the overall goal can be rewritten by definitions of choice_left/right
+  -- then the inductive hypothesis can be applied directly.
+  |  choice_left h ih =>
+    expose_names
+    -- now we see the inductive hypothesis is:
+    -- `ih : Matches (rename f r1) (List.map f w_1)`
+    -- rewriting the goal with definition, we can then apply
+    apply Matches.choice_left
+    exact ih
+  |  choice_right h ih =>
+    expose_names
+    apply Matches.choice_right
+    exact ih
+  ----------------------------------------------
+  -- 4. concat
+  |  concat h h2 ih ih2 =>
+    expose_names
+    rw [List.map_append, rename]
+    -- now we see the patterns match so can use both inductive hypotheses
+    exact Matches.concat ih ih2
+  ----------------------------------------------
+  -- 5. star: repeats an expression zero or more times
+  -- 5.1 repeats zero time
+  |  star_nil a =>
+    exact Matches.star_nil (rename f a)
+  -- 5.2 repeats more times
+  |  star_more ih ih2 ih3 ih4 =>
+    expose_names
+    -- simp?
+    simp only [List.map_append]
+    -- goal becomes
+    -- `Matches (rename f r_1.star) (List.map f w1 ++ List.map f w2)`
+    exact Matches.star_more ih3 ih4
 
 /-!
   **Exercise 2**
