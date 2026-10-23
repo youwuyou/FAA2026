@@ -392,7 +392,7 @@ lemma sorted_may_not_imply_bst : ∃ t : BinaryTree, Sorted (inorder t) ∧ ¬ I
   -- show the under concatenation the construction is inorder sorted
   · apply Sorted.cons val val []
     · rfl
-    · exact Sorted.single 0
+    · exact Sorted.single val
   -----------------------------------------------------------------
   -- goal 2: showing the tree is not IsBST
   -- `¬IsBST (BinaryTree.node val subtree BinaryTree.nil)`
@@ -433,7 +433,7 @@ def fromList : List ℕ → BinaryTree
 
 -- **(a)** Prove the following theorem.
 lemma mem_heapInsert (y : ℕ) (t : BinaryTree) :
-    ∀ x : ℕ, y ∈ inorder (heapInsert x t) ↔ y = x ∨ y ∈ inorder t := by
+  ∀ x : ℕ, y ∈ inorder (heapInsert x t) ↔ y = x ∨ y ∈ inorder t := by
   sorry
 
 -- **(b)** Prove the following theorem.
