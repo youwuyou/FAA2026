@@ -342,7 +342,38 @@ lemma sorted_append (x : ℕ) (l1 l2 : List ℕ) (h1 : Sorted l1) (h2 : Sorted l
 -/
 -- **(a)** Prove the following theorem.
 theorem bst_has_sorted_inorder {t : BinaryTree} (ht : IsBST t) : Sorted (inorder t) := by
-  sorry
+  induction t with
+  | nil => apply Sorted.nil
+  | node =>
+    expose_names
+    -- now check different cases how IsBST holds
+    cases ht with
+    | node =>
+      expose_names
+      -- now we can use lemma we just proved
+      apply sorted_append
+      -- goal 1, 2: Sorted (inorder left), Sorted (inorder right)
+      -- directly by inductive hypothesis
+      · exact left_ih bst_left
+      · exact right_ih bst_right
+      -- goal 3: value.MaxOfList (inorder left)
+      · have h_helper : Sorted (inorder left):= left_ih bst_left
+        -- simp_all?
+        simp_all only [imp_self, forall_const, Nat.MaxOfList, ge_iff_le]
+        -- introduce y ∈ inorder left
+        intro y hy
+        -- next we use `hleft : ∀ x ∈ inorder left, x < value` to y, hy
+        -- and get `h_helper2 : y < value`
+        have h_helper2 := hleft y hy
+        omega
+      -- goal 4: value.MinOfList (inorder right)
+      -- this is just repeating the above but symmetrically
+      · have h_helper : Sorted (inorder left):= left_ih bst_left
+        -- simp_all?
+        simp_all only [imp_self, forall_const, Nat.MinOfList]
+        intro y hy
+        have h_helper2 := hright y hy
+        omega
 
 -- **(b)** Prove the following theorem.
 lemma sorted_may_not_imply_bst : ∃ t : BinaryTree, Sorted (inorder t) ∧ ¬ IsBST t := by
