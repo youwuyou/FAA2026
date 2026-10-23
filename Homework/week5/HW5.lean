@@ -434,7 +434,77 @@ def fromList : List ℕ → BinaryTree
 -- **(a)** Prove the following theorem.
 lemma mem_heapInsert (y : ℕ) (t : BinaryTree) :
   ∀ x : ℕ, y ∈ inorder (heapInsert x t) ↔ y = x ∨ y ∈ inorder t := by
-  sorry
+  intro x
+  fun_induction heapInsert x t with
+  -- ➊ t = .nil, if we had an empty tree, x will be insert as y = x and it is trivial in-order
+  -- as we have just one element
+  | case1 x => simp_all [inorder]
+  -- **MyNote:** then case ➋ and ➌ assume non-empty trees
+  -- I am not very sure but I feel like I missed some obvious simplifications.. The following
+  -- approach is just breaking the goal into bidirection proofs and follow the info view's hint
+  -------------------------------------------------------------------------
+  -- ➋ x ≤ value
+  --              (maxVal)                          (maxVal)
+  --              /     |                --->       /      |
+  --      subtree l     subtree r              subtree    subtree    denote r' := (heapInsert x r)
+  --                                             r'          l
+  -------------------------------------------------------------------------
+  | case2 x =>
+      expose_names
+      simp_all only [inorder, List.mem_append, List.mem_cons]
+      constructor
+      · intro h
+        cases h with
+        | inl h_ =>
+          cases h_ with
+          | inl h_1 => left; exact h_1
+          | inr h_2 => right; right; right; exact h_2
+        | inr h'_ =>
+          cases h'_ with
+          | inl h'_1 => right; right; left; exact h'_1
+          | inr h'_2 => right; left; exact h'_2
+      · intro h
+        cases h with
+        | inl h_ => left; left; exact h_
+        | inr h'_ =>
+          cases h'_ with
+          | inl h'_1 => right; right; exact h'_1
+          | inr h'_2 =>
+            cases h'_2 with
+            | inl ha => right; left; exact ha
+            | inr hb => left; right; exact hb
+    -------------------------------------------------------------------------
+    -- ➌ x > value
+    --
+    --              (value)                    (x := maxVal)
+    --              /     |          --->       /        |
+    --      subtree l     subtree r          subtree    subtree where r' := (heapInsert value r)
+    --                                         r'          l
+    -------------------------------------------------------------------------
+  | case3 x =>
+      expose_names
+      simp_all only [inorder, List.mem_append, List.mem_cons]
+      constructor
+      · intro h
+        cases h with
+        | inl h_ =>
+          cases h_ with
+          | inl h_1 => right; right; left; exact h_1
+          | inr h_2 => right; right; right; exact h_2
+        | inr h'_ =>
+          cases h'_ with
+          | inl h'_1 => left; exact h'_1
+          | inr h'_2 => right; left; exact h'_2
+      · intro h
+        cases h with
+        | inl h_ => right; left; exact h_
+        | inr h'_ =>
+          cases h'_ with
+          | inl h'_1 => right; right; exact h'_1
+          | inr h'_2 =>
+            cases h'_2 with
+            | inl ha => left; left; exact ha
+            | inr hb => left; right; exact hb
 
 -- **(b)** Prove the following theorem.
 theorem heapInsert_isHeap {t : BinaryTree} (ht : IsHeap t) :
