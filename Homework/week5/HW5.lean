@@ -83,12 +83,12 @@ theorem matches_rename {α β : Type} (f : α → β) {r : RegEx α} {w : List �
   (h : Matches r w) : Matches (rename f r) (List.map f w) := by
   -- overall goal: to show `Matches (rename f r) (List.map f w)`
   induction h with
-  -- 1. epsilon: here no renaming was used so trivially proved
+  -- case ➊ epsilon: here no renaming was used so trivially proved
   |  epsilon => exact Matches.epsilon
-  -- 2. symbol: here the symbol is renamed, we take the renaming rule `f` and again match
+  -- case ➋ symbol: here the symbol is renamed, we take the renaming rule `f` and again match
   |  symbol a => exact Matches.symbol (f a)
   ------------------------------------------------
-  -- 3. choice_left, choice_right; here we shall see
+  -- case ➌ choice_left, choice_right; here we shall see
   -- the overall goal can be rewritten by definitions of choice_left/right
   -- then the inductive hypothesis can be applied directly.
   |  choice_left h ih =>
@@ -103,18 +103,18 @@ theorem matches_rename {α β : Type} (f : α → β) {r : RegEx α} {w : List �
     apply Matches.choice_right
     exact ih
   ----------------------------------------------
-  -- 4. concat
+  -- case ❹ concat
   |  concat h h2 ih ih2 =>
     expose_names
     rw [List.map_append, rename]
     -- now we see the patterns match so can use both inductive hypotheses
     exact Matches.concat ih ih2
   ----------------------------------------------
-  -- 5. star: repeats an expression zero or more times
-  -- 5.1 repeats zero time
+  -- case ➎ star: repeats an expression zero or more times
+  -- first, repeats zero time
   |  star_nil a =>
     exact Matches.star_nil (rename f a)
-  -- 5.2 repeats more times
+  -- second, repeats more times
   |  star_more ih ih2 ih3 ih4 =>
     expose_names
     -- simp?
@@ -508,8 +508,128 @@ lemma mem_heapInsert (y : ℕ) (t : BinaryTree) :
 
 -- **(b)** Prove the following theorem.
 theorem heapInsert_isHeap {t : BinaryTree} (ht : IsHeap t) :
-    ∀ x : ℕ, IsHeap (heapInsert x t) := by
-  sorry
+    ∀ val : ℕ, IsHeap (heapInsert val t) := by
+  intro val
+  -- **MyNote:**
+  -- above I renamed `x` to `val` because I had a hard time to not get
+  -- confused with definitions used in IsHeap, I hope it is fine.
+  -- In the following proofs I will first show the in-order rules hold,
+  -- and introduce some intermediate `hleft_`, `hright_` to refer to them
+  -- before *explicitly* construct the proof by `IsHeap.node`.
+  -------
+  fun_induction heapInsert val t with
+  -- case ➊ empty tree
+  -- we need to show `IsHeap (BinaryTree.node x BinaryTree.nil BinaryTree.nil)`
+  -- here we used construction with named variables just for clarity
+  --
+  --              nil          (val)
+  --                  --->     /  |
+  --                         nil   nil
+  -------------------------------------------------------------------------
+  | case1 val =>
+    let l_ : BinaryTree := .nil
+    let r_ : BinaryTree := .nil
+    have heap_left_ : IsHeap l_ := by
+      apply IsHeap.nil
+    have heap_right_ : IsHeap r_ := by
+      apply IsHeap.nil
+    have hleft_ : ∀ x ∈ inorder l_, x ≤ val := by
+      -- goal becomes ∀ x ∈ inorder l_, x ≤ val
+      intro x h
+      rw [inorder] at h
+      trivial -- here we see h : x ∈ [] and to conclude x ≤ val trivial works
+    have hright_ : ∀ x ∈ inorder r_, x ≤ val := by
+      intro x h
+      rw [inorder] at h
+      trivial
+  -----------
+  -- now we assemble the proof using above assumptions
+    exact IsHeap.node
+      (value := val)
+      (l := l_) (r := r_)
+      (heap_left := heap_left_)
+      (heap_right := heap_right_)
+      (hleft := hleft_)
+      (hright := hright_)
+  -------------------------------------------------------------------------
+  -- case ➋ val ≤ value
+  --              (value)                     (value)
+  --              /     |          --->       /     |
+  --      subtree l     subtree r            r'     l
+  --                                         ↑
+  --                                      r' := heapInsert val r
+  -------------------------------------------------------------------------
+  | case2 val =>
+    expose_names
+    cases ht
+    expose_names
+    let l_ : BinaryTree := heapInsert val r -- as in unicode above
+    let r_ : BinaryTree := l
+    have heap_left_ : IsHeap l_ := by
+      exact ih1 heap_right
+    have heap_right_ : IsHeap r_ := by
+      -- this was the old (IsHeap l) but we swapped the position
+      exact heap_left
+    have hleft_ : ∀ x ∈ inorder l_, x ≤ value := by
+      intro x h
+      rw [mem_heapInsert] at h
+      cases h with
+      | inl hl =>
+        omega -- we have hl : x = val and want to show x ≤ value
+      | inr hr =>
+        exact hright x hr
+    have hright_ : ∀ x ∈ inorder r_, x ≤ value := by
+      exact hleft -- here it inherits from previously, we just swapped positions
+    ---------------------------
+    exact IsHeap.node
+      (value := value)
+      (l := l_) (r := r_)
+      (heap_left := heap_left_)
+      (heap_right := heap_right_)
+      (hleft := hleft_)
+      (hright := hright_)
+  -------------------------------------------------------------------------
+  -- case ➌ val > value
+  --                                    ヽ(°〇°)ﾉ the new max value here
+  --                                               ↓
+  --              (value)                        (val)
+  --              /     |          --->         /    |
+  --      subtree l     subtree r            r'       l
+  --                                         ↑
+  --                                and r' := heapInsert value r
+  | case3 val =>
+    expose_names
+    cases ht
+    expose_names
+    let l_ : BinaryTree := heapInsert value r
+    let r_ : BinaryTree := l
+    -- next show heap properties preserved
+    have heap_left_ : IsHeap l_ := by
+      exact ih1 heap_right
+    have heap_right_ : IsHeap r_ := by
+      exact heap_left -- again just swapped positions
+    have hleft_ : ∀ x ∈ inorder l_, x ≤ val := by
+      intro x h
+      rw [mem_heapInsert] at h
+      cases h with
+      | inl hl => omega
+      | inr hr =>
+        have h_helper : x ≤ value := by
+          exact hright x hr
+        omega
+    have hright_ : ∀ x ∈ inorder r_, x ≤ val := by
+      intro x h
+      have h_helper : x ≤ value := by
+        exact hleft x h
+      omega
+    ----------------------------------------
+    exact IsHeap.node
+      (value := val)
+      (l := l_) (r := r_)
+      (heap_left := heap_left_)
+      (heap_right := heap_right_)
+      (hleft := hleft_)
+      (hright := hright_)
 
 -- **(c)** Prove the following theorem.
 theorem fromList_isHeap (xs : List ℕ) : IsHeap (fromList xs) := by
