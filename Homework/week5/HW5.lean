@@ -513,10 +513,40 @@ theorem heapInsert_isHeap {t : BinaryTree} (ht : IsHeap t) :
 
 -- **(c)** Prove the following theorem.
 theorem fromList_isHeap (xs : List ℕ) : IsHeap (fromList xs) := by
-  sorry
+  fun_induction fromList with
+  | case1 => apply IsHeap.nil
+  | case2 =>
+    expose_names
+    exact heapInsert_isHeap ih1 x
 
 -- **(d)** Prove the following theorem.
 theorem mem_fromList (y : ℕ) (xs : List ℕ) : y ∈ inorder (fromList xs) ↔ y ∈ xs := by
-  sorry
+  fun_induction fromList with
+  | case1 => simp only [inorder, List.not_mem_nil]
+  | case2 =>
+    expose_names
+    simp_all only [List.mem_cons]
+    constructor
+    -- subgoal 1: `y = x ∨ y ∈ xs`
+    · intro h
+      rw [mem_heapInsert] at h
+      cases h with
+      | inl hl => left; exact hl
+      | inr hr => right; exact ih1.mp hr
+    -- subgoal 2: `y ∈ inorder (heapInsert x (fromList xs))`
+    · intro h
+      cases h with
+      | inl hl =>
+        -- rw?
+        rw [mem_heapInsert]
+        left
+        exact hl
+      | inr hr =>
+        have h_helper: y ∈ inorder (fromList xs) := by
+          exact ih1.mpr hr
+        -- rw?
+        rw [mem_heapInsert]
+        right
+        exact h_helper
 
 end HW5
