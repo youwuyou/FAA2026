@@ -239,7 +239,7 @@ theorem lookup_correct (q : ℕ) {t : BinaryTree} (ht : IsBST t) :
 
   Prove the following two helper lemmas about `Sorted`.
 -/
-inductive Sorted : List ℕ  → Prop
+inductive Sorted : List ℕ → Prop
   | nil : Sorted []
   | single (a : ℕ) : Sorted [a]
   | cons (a b : ℕ) (t : List ℕ ) : a ≤ b → Sorted (b :: t) → Sorted (a :: b :: t)
@@ -257,7 +257,78 @@ lemma sorted_a_b (a b : ℕ) (l : List ℕ) (h : Sorted (a :: b :: l)) : a ≤ b
 -- **(b)** Prove the following lemma.
 lemma sorted_append (x : ℕ) (l1 l2 : List ℕ) (h1 : Sorted l1) (h2 : Sorted l2)
   (h1' : x.MaxOfList l1) (h2' : x.MinOfList l2) : Sorted (l1 ++ x :: l2) := by
-    sorry
+    -- **MyNote:** note that `x :: l2` is sorted because of
+    -- `h2' : x.MinOfList l2`
+    -- *here, instead of nested `exact Sorted.cons_min x l2 h2' h2`*
+    -- *I find the following notion of using `apply` to the constructor easier*
+    have h_x_l2 : Sorted (x :: l2) := by
+      apply Sorted.cons_min
+      · exact h2'
+      · exact h2
+    -- Then induction on h1 to check all `l1 ++ x :: l2` shall be sorted
+    induction h1 with
+    -- **case 1:** `l1 = []`
+    --    [] ++ x :: l2
+    --  = x :: l2
+    | nil =>
+      rw [List.nil_append] -- [] as neutral element when appending
+      exact h_x_l2
+    -- **case 2:** `l1 = [a]`
+    --   [a] ++ (x :: l2)
+    -- =  a :: (x :: l2),  with  a ≤ x
+    | single a =>
+      simp_all only [Nat.MaxOfList, Nat.MinOfList]
+      -- recall:
+      apply Sorted.cons
+      · apply h1'
+        rw [List.mem_singleton]
+      · exact h_x_l2
+    -- **case 3:** `l1 = a :: b :: t`,  with  a ≤ b  and  Sorted (b :: t)
+    --   (a :: b :: t) ++ (x :: l2)
+    -- = a :: b :: (t ++ (x :: l2))
+    | cons =>
+      expose_names
+      -- recall: to construct cons, we need
+      -- | cons (a b : ℕ) (t : List ℕ ) : a ≤ b → Sorted (b :: t) → Sorted (a :: b :: t)
+      -- here t is (t ++ (x :: l2))
+      apply Sorted.cons
+      -- for a ≤ b
+      · exact h
+      -- for Sorted (b :: t.append (x :: l2))
+      · apply a_ih -- since fulfilling a_ih implies our goal, we just show its assumption holds
+        -- here if explicit we need to use h1' : x.MaxOfList (a :: b :: t) to conclude
+        -- then x is also max of b :: t
+        -- but simp_all seems to do the job for us.
+        simp_all
+    -- **case 4:** `l1 = a :: t`,  with  `h : a.MinOfList t`  and  `h_1 : Sorted t`
+    -- earlier we also had `h_x_l2 : Sorted (x :: l2)`
+    --   (a :: t) ++ (x :: l2)
+    -- = a :: (t ++ (x :: l2))
+    | cons_min =>
+      expose_names
+      -- goal 4.1: show (t ++ (x :: l2)) is sorted
+      have h_helper : Sorted (t ++ (x :: l2)) := by
+        apply a_ih
+        simp_all
+      cases t with
+      | nil =>
+        -- simp_all?
+        simp_all only [Nat.MinOfList, List.not_mem_nil, IsEmpty.forall_iff, implies_true,
+          Nat.MaxOfList, ge_iff_le, List.nil_append, List.mem_cons, or_false, forall_eq,
+          List.cons_append]
+        apply Sorted.cons
+        · exact h1'
+        · exact h_x_l2
+      | cons =>
+        expose_names
+        apply Sorted.cons
+        · rw [Nat.MinOfList] at h
+          apply h
+          -- now only need to show head ∈ head :: tail
+          -- simp?
+          simp only [List.mem_cons, true_or]
+        · apply a_ih
+          simp_all
 
 /-!
   **Exercise 4**
