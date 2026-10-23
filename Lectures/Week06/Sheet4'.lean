@@ -60,7 +60,10 @@ theorem subinterval_to_interval_qlt {n : ℕ} (arr : SortedArrayFun n) (q a mid 
     -- the rest of the proof follows from one important fact: Monotone arr.get
     have: Monotone arr.get := by exact arr.sorted
     simp [Monotone] at this
-    sorry
+    by_contra h
+    have h_mid_i : mid ≤ i := by omega
+    have h_get : arr.get mid ≤ arr.get i := this h_mid_i
+    omega
   · -- easy direction
     intro h
     cases h
@@ -80,11 +83,24 @@ lemma bs_aux_correctness (n q : ℕ) (arr : SortedArrayFun n) (a b : ℕ) (h_le 
     · -- go left
       rw [← ih1]
       apply subinterval_to_interval_qlt
-      · sorry
-      · sorry
+      · grind
+      · grind
     · -- go right; symmetric case
       rw [← ih1]
-      sorry
+      constructor
+      · intro h
+        obtain ⟨i, hi⟩ := h
+        use i
+        suffices mid + 1 ≤ i by grind
+        replace hi : arr.get i = q := by grind
+        by_contra h'
+        have h_i_mid : i ≤ mid := by omega
+        have h_get : arr.get i ≤ arr.get mid := arr.sorted h_i_mid
+        omega
+      · intro h
+        obtain ⟨i, hi⟩ := h
+        use i
+        grind
     · -- found it
       simp_all only [not_lt, ne_eq, reduceCtorEq, not_false_eq_true, iff_true]
       use mid
@@ -99,13 +115,28 @@ theorem contains_bs_correctness (n q : ℕ) (h : 0 < n) (arr : SortedArrayFun n)
 
 /-
 -- Hints below
+-/
 
 -- Exercise: Fill in the rest
 theorem subinterval_to_interval_qgt {n : ℕ} (arr : SortedArrayFun n) (q a mid b: ℕ)
   (h_bounds : a ≤ mid ∧ mid ≤ b)  -- [a [mid q⁻¹ b]]:
   (h_q: arr.get mid < q ):
-  (∃ i, a ≤ i ∧ i ≤ b ∧ arr.get i = q) ↔ (∃ i, (mid+1) ≤ i ∧ i ≤ b ∧ arr.get i = q)  := by sorry
--/
+  (∃ i, a ≤ i ∧ i ≤ b ∧ arr.get i = q) ↔ (∃ i, (mid+1) ≤ i ∧ i ≤ b ∧ arr.get i = q)  := by
+  constructor
+  · intro h
+    obtain ⟨i, hi⟩ := h
+    use i
+    suffices mid + 1 ≤ i by grind
+    replace hi : arr.get i = q := by grind
+    by_contra h'
+    have h_i_mid : i ≤ mid := by omega
+    have h_get : arr.get i ≤ arr.get mid := arr.sorted h_i_mid
+    omega
+  · intro h
+    obtain ⟨i, hi⟩ := h
+    use i
+    grind
+
 
 /- Follow-up Exercise:
   Step (1) finish the remaining proofs posslby with grind.

@@ -60,7 +60,50 @@ else
   Merge l1' l2'
 
 -- Let's assume sorted_merge for now; we will prove sorted_merge in the next sheet
-theorem sorted_merge (l1 l2 : List ℕ) (hxs : Sorted l1) (hys : Sorted l2) : Sorted (Merge l1 l2) := sorry
+lemma minOfList_merge {a : ℕ} {l1 l2 : List ℕ} (h1 : a.MinOfList l1) (h2 : a.MinOfList l2)
+  : a.MinOfList (Merge l1 l2) := by
+    fun_induction Merge l1 l2 <;> simp_all [Nat.MinOfList]
+
+theorem sorted_merge (l1 l2 : List ℕ) (hxs : Sorted l1) (hys : Sorted l2) : Sorted (Merge l1 l2) := by
+  fun_induction Merge l1 l2 <;> expose_names
+  · exact hxs
+  · exact hys
+  · have hxs' : Sorted xs := by
+      cases hxs with
+      | single => exact .nil
+      | cons _ _ _ _ ht => exact ht
+      | cons_min _ _ _ ht => exact ht
+    have hmin : x.MinOfList (y :: ys) := by
+      intro z hz
+      simp only [List.mem_cons] at hz
+      cases hz <;> expose_names
+      · omega
+      · trans y
+        · exact h
+        · exact sorted_min hys z h_1
+    apply Sorted.cons_min
+    · apply minOfList_merge
+      · exact sorted_min hxs
+      · exact hmin
+    · exact ih1 hxs' hys
+  · have hys' : Sorted ys := by
+      cases hys with
+      | single => exact .nil
+      | cons _ _ _ _ ht => exact ht
+      | cons_min _ _ _ ht => exact ht
+    have hmin : y.MinOfList (x :: xs) := by
+      intro z hz
+      simp only [List.mem_cons] at hz
+      cases hz <;> expose_names
+      · omega
+      · trans x
+        · omega
+        · exact sorted_min hxs z h_1
+    apply Sorted.cons_min
+    · apply minOfList_merge
+      · exact hmin
+      · exact sorted_min hys
+    · exact ih1 hxs hys'
 
 #check MergeSort.induct
 
