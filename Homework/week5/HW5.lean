@@ -377,7 +377,34 @@ theorem bst_has_sorted_inorder {t : BinaryTree} (ht : IsBST t) : Sorted (inorder
 
 -- **(b)** Prove the following theorem.
 lemma sorted_may_not_imply_bst : ∃ t : BinaryTree, Sorted (inorder t) ∧ ¬ IsBST t := by
-  sorry
+  -- construct a counterexample
+  --                  (val)
+  --                 /     \
+  --               (val)    x
+  --               /  \
+  --              x   x
+  let val : ℕ := 0
+  let subtree := BinaryTree.node (value := val) ( left := .nil) (right := .nil)
+  use BinaryTree.node (value := val) (left := subtree) (right := .nil)
+  constructor
+  -- goal 1: showing the underlying flattened array is inorder
+  -- `Sorted (inorder (BinaryTree.node val subtree BinaryTree.nil))`
+  -- show the under concatenation the construction is inorder sorted
+  · apply Sorted.cons val val []
+    · rfl
+    · exact Sorted.single 0
+  -----------------------------------------------------------------
+  -- goal 2: showing the tree is not IsBST
+  -- `¬IsBST (BinaryTree.node val subtree BinaryTree.nil)`
+  -- show IsBST (BinaryTree.node val subtree BinaryTree.nil) leads to False
+  · intro h
+    obtain ⟨bst_left, bst_right, hleft, hright⟩ := h
+    expose_names
+    -- we pinpoint the problem explicitly and introduce h_issue
+    have h_issue : val < val := by
+      simp_all [subtree, inorder] -- just use definitions here
+    -- now we can conclude false using omega that takes h_issue: val < val
+    omega
 
 
 /-!
