@@ -51,8 +51,42 @@ def fastPowMuls (n : ℕ) : ℕ :=
   else fastPowMuls (n / 2) + 2
 
 -- **(a)** Prove the following theorem.
+-- **MyNote:**
+-- fastPow with n ∈ ℕ
+--       ⎧ 1,              if n = 0
+--       | a,              if n = 1
+--  aⁿ = ⎨ (aⁿ⁄²)²,         if n even
+--       ⎩ (aⁿ⁄²)² · a,     if n odd
+---------------------------------------
 theorem fastPow_eq_pow (a n : ℕ) : fastPow a n = a ^ n := by
-  sorry
+  fun_induction fastPow with
+  -- case 1, 2 are trivial by definitions
+  | case1 =>
+    rw [Nat.pow_zero]
+  | case2 h =>
+    rw [Nat.pow_one]
+  --------------------------------
+  -- case 3: the even case
+  -- to show `square (fastPow a (n / 2)) = a ^ n`
+  | case3 n h h1 h2 ih =>
+    unfold square
+    rw [ih, ← pow_add]
+    -- now show powers equal
+    have h_helper : (n / 2) + (n / 2) = n := by
+      omega
+    rw [h_helper]
+  --------------------------------
+    -- case 4: the odd case
+    -- `square (fastPow a (n / 2)) * a = a ^ n`
+  | case4 n h h1 h2 ih =>
+    unfold square
+    rw [ih, ← pow_add]
+    rw [← pow_succ]
+    -- use the helper to recover n, using that n is odd so twice the halved plus
+    -- one is again n
+    have h_helper : n / 2 + n / 2 + 1 = n := by
+      omega
+    rw [h_helper]
 
 /-
   Hint: You might find the following two theorems useful.
