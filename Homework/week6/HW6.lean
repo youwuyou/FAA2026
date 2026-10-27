@@ -51,7 +51,8 @@ def fastPowMuls (n : ℕ) : ℕ :=
   else fastPowMuls (n / 2) + 2
 
 -- **(a)** Prove the following theorem.
--- **MyNote:**
+-- **MyNote:** the idea is (x * x) * (x * x) is faster than x * (x * (x * x))
+-- under reusing the squared number.
 -- fastPow with n ∈ ℕ
 --       ⎧ 1,              if n = 0
 --       | a,              if n = 1
@@ -91,13 +92,40 @@ theorem fastPow_eq_pow (a n : ℕ) : fastPow a n = a ^ n := by
 /-
   Hint: You might find the following two theorems useful.
 -/
-#check Nat.log_div_base
-#check Nat.log_pos
+#check Nat.log_div_base -- ∀ (b n : ℕ), Nat.log b (n / b) = Nat.log b n - 1
+#check Nat.log_pos      -- ∀ {b n : ℕ}, 1 < b → b ≤ n → 0 < Nat.log b n
 
 -- **(b)** Prove the following theorem.
 theorem fastPowMuls_le (n : ℕ) : fastPowMuls n ≤ 2 * Nat.log 2 n := by
-  sorry
-
+  fun_induction fastPowMuls with
+  | case1 => omega
+  | case2 h => omega
+  | case3 n h h1 h2 ih =>
+    grw [ih, Nat.log_div_base]
+    -- we just do some log tricks
+    -- 2 * log(n/2) + 1 ≤ 2 * log(n)
+    -- 2 * (log(n) - log(2)) + 1 ≤ 2 * log(n)
+    -- 2 * (log(n) - 1) + 1 ≤ 2 * log(n)
+    ------------------------------------
+    -- now use positivity
+    have h_helper : 0 < Nat.log 2 n := by
+      apply Nat.log_pos
+      -- case 1: to show 1 < 2
+      · trivial
+      -- case 2: to show 2 ≤ n
+      · omega
+    omega
+  | case4 n h h1 h2 ih =>
+    -- we already used it above in case 3
+    have h_helper : 0 < Nat.log 2 n := by
+      apply Nat.log_pos
+      · trivial
+      · omega
+    -- use ih : fastPowMuls (n / 2) ≤ 2 * Nat.log 2 (n / 2)
+    calc fastPowMuls (n / 2) + 2
+        ≤ 2 * Nat.log 2 (n / 2) + 2 := by grw [ih]
+      _ ≤ 2 * (Nat.log 2 n - 1) + 2 := by rw [Nat.log_div_base]
+      _ ≤ 2 * Nat.log 2 n := by omega
 
 /-!
   **Exercise 2**
