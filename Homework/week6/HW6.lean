@@ -427,20 +427,67 @@ termination_by hi - lo
 
 -- **(a)** Prove the following theorem.
 theorem peak_isPeak_of_invariant (f : ℕ → ℕ) (a b lo hi : ℕ)
-    (hab : a ≤ lo) (hlh : lo ≤ hi) (hhb : hi ≤ b)
-    (hlo : lo = a ∨ f (lo - 1) < f lo) (hhi : hi = b ∨ f (hi + 1) ≤ f hi) :
-    IsPeak f a b (peak f lo hi) := by
-  sorry
+  (hab : a ≤ lo) (hlh : lo ≤ hi) (hhb : hi ≤ b)
+  (hlo : lo = a ∨ f (lo - 1) < f lo) (hhi : hi = b ∨ f (hi + 1) ≤ f hi) :
+  IsPeak f a b (peak f lo hi) := by
+  fun_induction peak with
+  -- case 1:  [mid + 1, hi] ⊆ [a, b]
+  -- we just introduce some helpers so we can apply ih1
+  | case1 =>
+    expose_names
+    have h1 : a ≤ mid + 1 := by omega
+    have h2 : mid + 1 ≤ hi := by omega
+    have h3 : f (mid + 1 - 1) < f (mid + 1) := by rw [Nat.add_sub_cancel]; exact h_1
+    exact ih1 h1 h2 hhb (Or.inr h3) hhi
+  -- case 2:  [lo, mid] ⊆ [a, b]
+  -- identical idea for using ih2
+  | case2 =>
+    expose_names
+    have h1 : lo ≤ mid := by omega
+    have h2 : mid ≤ b := by omega
+    have h3 : f (mid + 1) ≤ f mid := by omega
+    exact ih1 hab h1 h2 hlo (Or.inr h3)
+  -- case 3: IsPeak f a b lo
+  | case3 =>
+    expose_names
+    unfold IsPeak
+    -- no interval here since hi = lo
+    have h_ : hi = lo := by omega
+    rw [h_] at hhi
+    -- then just show each formula case by case
+    constructor
+    -- goal 3.1: a ≤ lo
+    · exact hab
+    -- goal 3.2:
+    -- lo ≤ b ∧ (lo = a ∨ f (lo - 1) ≤ f lo) ∧ (lo = b ∨ f (lo + 1) ≤ f lo)
+    · constructor
+      -- goal 3.2.1: lo ≤ b
+      · omega
+      -- goal 3.2.2: (lo = a ∨ f (lo - 1) ≤ f lo) ∧ (lo = b ∨ f (lo + 1) ≤ f lo)
+      · exact ⟨hlo.imp_right Nat.le_of_lt, hhi⟩
+
+
 
 -- **(b)** Prove the following theorem.
 theorem peak_isPeak (f : ℕ → ℕ) (a b : ℕ) (hab : a ≤ b) : IsPeak f a b (peak f a b) := by
-  sorry
+  fun_induction peak with
+  | case1 =>
+    expose_names
+
+
+    sorry
+  | case2 =>
+    expose_names
+    sorry
+  | case3 =>
+    expose_names
+    sorry
 
 -- **(c)** Prove the following theorem.
 theorem peak_eq_of_unimodal (f : ℕ → ℕ) (a b m : ℕ) (ham : a ≤ m) (hmb : m ≤ b)
-    (hinc : ∀ i, a ≤ i → i < m → f i < f (i + 1))
-    (hdec : ∀ i, m ≤ i → i < b → f (i + 1) < f i) :
-    peak f a b = m := by
+  (hinc : ∀ i, a ≤ i → i < m → f i < f (i + 1))
+  (hdec : ∀ i, m ≤ i → i < b → f (i + 1) < f i) :
+  peak f a b = m := by
   sorry
 
 end HW6
