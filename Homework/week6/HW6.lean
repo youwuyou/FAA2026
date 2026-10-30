@@ -484,10 +484,49 @@ theorem peak_isPeak (f : ℕ → ℕ) (a b : ℕ) (hab : a ≤ b) : IsPeak f a b
     (hlo := h4) (hhi := h5)
 
 -- **(c)** Prove the following theorem.
+-- **MyNote:** We want to show we shall land on m on any I := [lo, hi], where m ∈ I
+--
+--   a         lo    m    hi         b
+--   |---------├─────|─────┤---------|
+------------------------------------------------
 theorem peak_eq_of_unimodal (f : ℕ → ℕ) (a b m : ℕ) (ham : a ≤ m) (hmb : m ≤ b)
   (hinc : ∀ i, a ≤ i → i < m → f i < f (i + 1))
   (hdec : ∀ i, m ≤ i → i < b → f (i + 1) < f i) :
   peak f a b = m := by
-  sorry
+  have h_helper : ∀ lo hi, a ≤ lo → lo ≤ m → m ≤ hi → hi ≤ b → peak f lo hi = m := by
+      intro lo hi h_alo h_lom h_mhi h_hib
+      fun_induction peak f lo hi with
+      -- Case 1: `f mid < f (mid+1)`, we go right into `[mid+1, hi]`
+      | case1 =>
+        expose_names
+        have h1 : a ≤ mid + 1 := by omega
+        have h2 : mid + 1 ≤ m := by
+          by_contra h
+          push Not at h
+          have : mid < b := by omega
+          have h_ := hdec mid (by omega) this
+          omega
+        have h3 : m ≤ hi := h_mhi
+        have h4 : hi ≤ b := h_hib
+        exact ih1 h1 h2 h3 h4
+      -- Case 2: `f (mid+1) ≤ f mid`, we go left into `[lo, mid]`
+      | case2 =>
+        expose_names
+        have h1 : lo ≤ m := h_lom
+        have h2 : m ≤ mid := by
+          by_contra h
+          push Not at h
+          have h_amid : a ≤ mid := by omega
+          have h_ := hinc mid h_amid h
+          omega
+        have h3 : mid ≤ b := by omega
+        exact ih1 h_alo h1 h2 h3
+      -- Case 3: `lo = hi`, so `lo ≤ m ≤ hi` squeezes the result onto `m`
+      | case3 =>
+        omega
+  -- we can now prove finalize on [a, b]
+  have h_a : a ≤ a := by omega
+  have h_b : b ≤ b := by omega
+  exact h_helper a b h_a ham hmb h_b
 
 end HW6
