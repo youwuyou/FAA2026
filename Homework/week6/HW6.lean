@@ -267,8 +267,25 @@ theorem lt_isqrt_succ_mul_self (n : ℕ) : n < (isqrt n + 1) * (isqrt n + 1) := 
 
 -- **(b)** Prove the following theorem.
 theorem isqrt_mul_self_le (n : ℕ) : isqrt n * isqrt n ≤ n := by
-  sorry
-
+  -- case 1: isqrt n = 0, trivial case
+  by_cases h : isqrt n = 0
+  · simp [h]
+  -- case 2: since isqrt n ≠ 0 is a natural number, it is the successor
+  -- of some natural number k ∈ ℕ.
+  · obtain ⟨k, h_⟩ := Nat.exists_eq_succ_of_ne_zero h
+    rw [h_]
+    have hk : k < isqrt n := by omega
+    -- using theorem binSearch_least with named construction for clarity
+    have h_helper : ¬ pred n k :=
+      binSearch_least
+        (p := pred n)
+        (hp := pred_is_monotone n)
+        (lo := 0) (hi := n) (k := k)
+        (hlo := Nat.zero_le k)
+        (hk := hk)
+    -- we obtain (k + 1) * (k + 1) ≤ n and close directly
+    simp only [pred, Nat.not_lt] at h_helper
+    exact h_helper
 
 /-!
   **Exercise 4**
