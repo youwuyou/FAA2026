@@ -161,13 +161,65 @@ termination_by hi - lo
 
 -- **(a)** Prove the following theorem.
 theorem binSearch_true (p : ℕ → Prop) [DecidablePred p] (lo hi : ℕ) (h : p hi) :
-    p (binSearch p lo hi) := by
-  sorry
+  p (binSearch p lo hi) := by
+  fun_induction binSearch with
+  | case1 => expose_names; exact ih1 h_2
+  | case2 => expose_names; exact ih1 h
+  | case3 => expose_names; exact h
 
 -- **(b)** Prove the following theorem.
 theorem binSearch_least (p : ℕ → Prop) [DecidablePred p] (hp : MonotonePred p)
-    (lo hi k : ℕ) (hlo : lo ≤ k) (hk : k < binSearch p lo hi) : ¬p k := by
-  sorry
+  (lo hi k : ℕ) (hlo : lo ≤ k) (hk : k < binSearch p lo hi) : ¬p k := by
+  -- **MyNote:** Denote the result of binary search as `res`, the theorem says
+  --   `res : ℕ := binSearch p lo hi`,
+  -- ⇔ `res` indicates the least index in [lo, hi], where `p` is true
+  -- ⇔ For any smaller indices k ∈ [lo, res) must not make `p` true.
+  ------------------------------------------------
+  rw [MonotonePred] at hp
+  fun_induction binSearch with
+  ----------------------------------------------
+  -- Case 1:
+  -- binSearch goes left, (p mid is true ∧ hi := mid), enter [lo, mid]
+  --                res := hi'
+  --                /
+  --   lo         mid         hi
+  --   ├───────────┤          |       lo unchanged, so `hlo : lo ≤ k` still fits the IH
+  | case1 =>
+    expose_names
+    exact ih1 hlo hk -- by inductive hypothesis directly
+  ----------------------------------------------
+  -- Case 2: binSearch goes right, (p mid is false ∧ lo := mid + 1), enter [mid+1, hi]
+  --   lo         mid         hi
+  --   |           |  ├───────┤
+  --                 mid+1
+  --                    \
+  --                    res := lo'
+  | case2 =>
+    expose_names
+    -- case 2.1: k ≤ mid
+    -- case 2.2: or ih1 : mid + 1 ≤ k → k < binSearch p (mid + 1) hi → ¬p k
+    -- by showing mid + 1 ≤ k
+    -- hk states k ∈ [lo', res'], res' is the new result after one recursion on [mid+1, hi]
+    by_cases hk : k ≤ mid
+    · apply hp at hk
+      rw [imp_iff_not_or] at hk
+      obtain hk_l | hk_r := hk
+      · exact hk_l
+      · contradiction
+    · expose_names
+      -- simple rewrite to match the form of the ih1
+      have hk_rev : mid + 1 ≤ k := by
+        omega
+      exact ih1 hk_rev hk_1
+  ----------------------------------------------
+  -- Case 3:
+  -- binSearch terminates when ¬ lo < hi, i.e. hi ≤ lo — the window [lo, hi) is empty
+  -- it must be that hi is k
+  | case3 =>
+    expose_names
+    have h_rev : hi = k := by
+      omega
+    simp_all
 
 
 /-!
