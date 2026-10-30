@@ -183,7 +183,7 @@ theorem binSearch_least (p : ℕ → Prop) [DecidablePred p] (hp : MonotonePred 
   --                res := hi'
   --                /
   --   lo         mid         hi
-  --   ├───────────┤          |       lo unchanged, so `hlo : lo ≤ k` still fits the IH
+  --   ├───────────┤          |
   | case1 =>
     expose_names
     exact ih1 hlo hk -- by inductive hypothesis directly
@@ -213,7 +213,7 @@ theorem binSearch_least (p : ℕ → Prop) [DecidablePred p] (hp : MonotonePred 
       exact ih1 hk_rev hk_1
   ----------------------------------------------
   -- Case 3:
-  -- binSearch terminates when ¬ lo < hi, i.e. hi ≤ lo — the window [lo, hi) is empty
+  -- binSearch terminates when ¬ lo < hi, i.e. hi ≤ lo
   -- it must be that hi is k
   | case3 =>
     expose_names
