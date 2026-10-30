@@ -470,18 +470,18 @@ theorem peak_isPeak_of_invariant (f : ℕ → ℕ) (a b lo hi : ℕ)
 
 -- **(b)** Prove the following theorem.
 theorem peak_isPeak (f : ℕ → ℕ) (a b : ℕ) (hab : a ≤ b) : IsPeak f a b (peak f a b) := by
-  fun_induction peak with
-  | case1 =>
-    expose_names
-
-
-    sorry
-  | case2 =>
-    expose_names
-    sorry
-  | case3 =>
-    expose_names
-    sorry
+  -- for the peak we have lo = a and hi = b
+  have h1 : a ≤ a := by omega
+  have h2 : a ≤ b := hab
+  have h3 : b ≤ b := by omega
+  -- similarly, with lo := a and hi := b substituted into the inequalities
+  have h4 : a = a ∨ f (a - 1) < f a := by left; rfl
+  have h5 : b = b ∨ f (b + 1) ≤ f b := by left; rfl
+  -- we can then apply the theorem directly
+  exact peak_isPeak_of_invariant
+    (f := f) (a := a) (b := b) (lo := a) (hi := b)
+    (hab := h1) (hlh := h2) (hhb := h3)
+    (hlo := h4) (hhi := h5)
 
 -- **(c)** Prove the following theorem.
 theorem peak_eq_of_unimodal (f : ℕ → ℕ) (a b m : ℕ) (ham : a ≤ m) (hmb : m ≤ b)
