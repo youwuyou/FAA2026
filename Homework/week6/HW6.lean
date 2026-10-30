@@ -240,12 +240,30 @@ def isqrt (n : ℕ) : ℕ := binSearch (fun k => n < (k + 1) * (k + 1)) 0 n
 /-
   Hint: `nlinarith` proves some non-linear inequalities, and consider the theorems:
 -/
-#check Nat.mul_self_le_mul_self
-#check Nat.sub_add_cancel
+#check Nat.mul_self_le_mul_self -- (h : m ≤ n) : m * m ≤ n * n
+#check Nat.sub_add_cancel       -- (h : m ≤ n) : n - m + m = n
+
+-- **MyNote:** In the following we will introduce some helpers
+-- ➊ Predicate itself for `isqrt`, when k > ⌊√n⌋.
+-- here for the decidable as a deriving property, we add this @[reducible] (not covered in class),
+-- but found here https://proofassistants.stackexchange.com/questions/2457/what-is-the-precise-meaning-of-reducible
+@[reducible] def pred (n k : ℕ) : Prop := n < (k + 1) * (k + 1)
+
+-- ➋ monotonicity
+-- i ≤ j → pred n i → pred n j
+theorem pred_is_monotone (n : ℕ) : MonotonePred (pred n) := by
+  unfold MonotonePred
+  intro i j h h_
+  simp_all only [pred]
+  nlinarith
 
 -- **(a)** Prove the following theorem.
 theorem lt_isqrt_succ_mul_self (n : ℕ) : n < (isqrt n + 1) * (isqrt n + 1) := by
-  sorry
+  unfold isqrt
+  apply binSearch_true (pred n)
+  -- after unfolding we can close the goal n < (n + 1) * (n + 1) directly
+  unfold pred
+  nlinarith
 
 -- **(b)** Prove the following theorem.
 theorem isqrt_mul_self_le (n : ℕ) : isqrt n * isqrt n ≤ n := by
@@ -307,11 +325,60 @@ decreasing_by
 
 -- **(a)** Prove the following theorem.
 theorem mem_quickSort (y : ℕ) (l : List ℕ) : y ∈ quickSort l ↔ y ∈ l := by
-  sorry
+  fun_induction quickSort with
+  | case1 => trivial -- y ∈ [] ↔ y ∈ []
+  | case2 =>
+    expose_names
+    -- y ∈ quickSort (lower x xs) ++ x :: quickSort (upper x xs) ↔ y ∈ x :: xs
+    constructor
+    -- goal 1: y ∈ x :: xs
+    -- if `h: y ∈ quickSort (lower x xs) ++ x :: quickSort (upper x xs)`
+    · intro h
+       -- explicitly write out `++` and lower, upper etc.
+      simp_all only [List.mem_append, mem_lower, mem_upper, List.mem_cons]
+      cases h <;> expose_names
+      · right
+        exact h.left
+      · cases h <;> expose_names
+        · left; exact h
+        · right; exact h.left
+    -------------------------------------------
+    -- goal 2: y ∈ quickSort (lower x xs) ++ x :: quickSort (upper x xs)
+    -- if y ∈ x :: xs
+    · intro h
+      simp_all only [List.mem_append, mem_lower, mem_upper, List.mem_cons]
+      cases h <;> expose_names
+      · right; left; exact h
+      · simp_all only [true_and] -- simp_all?
+        omega
 
 -- **(b)** Prove the following theorem.
 theorem quickSort_sorted (l : List ℕ) : Sorted (quickSort l) := by
-  sorry
+  fun_induction quickSort with
+  | case1 => exact Sorted.nil -- trivial case Sorted []
+  | case2 pivot l ih_lo ih_hi =>
+    -----------------------------------------------------
+    --                     pivot
+    --                      /
+    --   □ □ □ □ □ □ □ □ □ ■ □ □ □ □ □ □
+    --   └─────── < ─────┘   └─── ≥ ───┘
+    --      |                        |
+    -- case ➊: lower-half        case ➋: upper-half
+    apply sorted_append
+    ----------------------------------------------
+    -- Case ➊, ➋ are sorted by definition
+    · exact ih_lo
+    · exact ih_hi
+    ----------------------------------------------
+    -- Case ➌ `pivot.MaxOfList (quickSort (lower pivot l))`
+    -- pivot is larger than all lower-half elements `e`
+    · intro e h
+      simp_all [mem_quickSort]
+      omega
+    ----------------------------------------------
+    -- Case ❹ `pivot.MinOfList (quickSort (upper pivot l))`
+    · intro e h
+      simp_all [mem_quickSort]
 
 /-!
   **Exercise 5**
