@@ -188,7 +188,50 @@ def MatchSet (r : RegEx α) : Set (List α) := { w | r.Matches w }
 -/
 lemma matchEpsilon_eq_true_iff (r : RegEx α) :
   r.matchEpsilon = true ↔ r.Matches [] := by
-  sorry
+  fun_induction matchEpsilon with
+  | case1 =>
+    constructor
+    · intro h; rfl
+    · intro h; rfl
+  | case2 =>
+    constructor
+    · intro h; contradiction
+    · intro h; contradiction
+  | case3 =>
+    simp only [Bool.or_eq_true]
+    constructor
+    · intro h
+      simp only [RegEx.Matches]
+      cases h
+      · left; grind
+      · right; grind
+    · intro h
+      simp only [RegEx.Matches] at h
+      cases h
+      · left; grind
+      · right; grind
+  | case4 =>
+    constructor
+    · intro h
+      -- simp_all?
+      simp_all only [Bool.and_eq_true, iff_true]
+      rw [RegEx.Matches]
+      grind
+    · intro h
+      -- simp_all?
+      simp_all only [Bool.and_eq_true]
+      rw [RegEx.Matches] at h
+      -- simp_all?
+      simp_all only [List.nil_eq, List.append_eq_nil_iff, ↓existsAndEq,
+                    and_true, exists_eq_left, and_self]
+  | case5 =>
+    constructor
+    · intro h
+      simp only [RegEx.Matches]
+      -- ∃ words, [] = words.flatten ∧ ∀ word ∈ words, p.Matches word
+      use [] -- choose the empty list
+      waterfall
+    · intro h; rfl
 
 
 /-- Timed implementation of `matchEpsilon`. -/
@@ -252,7 +295,7 @@ theorem matchEpsilonT_semantic {α : Type} (r : RegEx α) :
 def matchEpsilonT' {α : Type} : RegEx α → TimeM ℕ Bool := sorry
 
 theorem matchEpsilonT'_correct {α : Type} (r : RegEx α) :
-    (matchEpsilonT' r).ret = r.matchEpsilon := by
+  (matchEpsilonT' r).ret = r.matchEpsilon := by
   sorry -- use `waterfall`
 
 theorem matchEpsilonT'_cost {α : Type} (r : RegEx α) :
