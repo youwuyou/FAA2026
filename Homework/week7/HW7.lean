@@ -121,7 +121,13 @@ theorem bstFindT_correct (q : ℕ) (t : BinaryTree) (ht : IsBST t) :
   fun_induction bstFindT with
   | case1 => simp [inorder]
   | case2 =>
-    sorry
+    obtain ⟨bl, br, hl, hr⟩ := ht
+    -- unfold the monad definition for correctness proof
+    simp only [TimeM.ret_bind]
+    -- use grind and supply the case distinctions for all if-branches
+    split_ifs <;> grind [inorder, compareNat_eq_zero_iff,
+                        compareNat_eq_neg_one_iff,
+                        compareNat_eq_one_iff]
 
 theorem bstFindT_time (q : ℕ) (t : BinaryTree) :
   (bstFindT q t).time ≤ t.height := by
