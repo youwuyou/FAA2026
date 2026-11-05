@@ -84,27 +84,51 @@ def bstFindT (q : ℕ) : BinaryTree → TimeM ℕ Bool
   **Task (a)**: Prove the following two helper lemmas.
 -/
 lemma mem_inorder_node_of_lt {q x : ℕ} {l r : BinaryTree}
-    (ht : IsBST (.node x l r)) (hq : q < x) :
-    q ∈ inorder (.node x l r) ↔ q ∈ inorder l := by
-  sorry
+  (ht : IsBST (.node x l r)) (hq : q < x) :
+  q ∈ inorder (.node x l r) ↔ q ∈ inorder l := by
+  -- assume hq : q < x, that q to search is strictly smaller than the root
+  -- simp_all?
+  simp_all only [inorder, List.mem_append, List.mem_cons, or_iff_left_iff_imp]
+  intro h
+  cases h
+  · grind
+  · obtain ⟨_, _, hl, hr⟩ := ht
+    apply hright at h_1
+    omega
 
 lemma mem_inorder_node_of_gt {q x : ℕ} {l r : BinaryTree}
-    (ht : IsBST (.node x l r)) (hq : x < q) :
-    q ∈ inorder (.node x l r) ↔ q ∈ inorder r := by
-  sorry
+  (ht : IsBST (.node x l r)) (hq : x < q) :
+  q ∈ inorder (.node x l r) ↔ q ∈ inorder r := by
+  -- assume hq : x < q, now the q to search is strictly larger than root
+  -- simp_all?
+  simp_all only [inorder, List.mem_append, List.mem_cons]
+  constructor
+  · intro h
+    cases h
+    · obtain ⟨_, _, hl, hr⟩ := ht
+      apply hleft at h_1
+      omega
+    · grind
+  · intro h
+    grind
 
 /-!
   **Task (b)**: Prove the following two theorems about
   correctness and running time of `bstFindT`.
 -/
 theorem bstFindT_correct (q : ℕ) (t : BinaryTree) (ht : IsBST t) :
-    (bstFindT q t).ret = true ↔ q ∈ inorder t := by
-  sorry
+  (bstFindT q t).ret = true ↔ q ∈ inorder t := by
+  fun_induction bstFindT with
+  | case1 => simp [inorder]
+  | case2 =>
+    sorry
 
 theorem bstFindT_time (q : ℕ) (t : BinaryTree) :
-    (bstFindT q t).time ≤ t.height := by
-  sorry
-
+  (bstFindT q t).time ≤ t.height := by
+  fun_induction bstFindT
+  · simp
+  · simp only [TimeM.time_bind, TimeM.time_tick, compareNat, BinaryTree.height]
+    split_ifs <;> grind
 
 /-!
 **Exercise 2: Regular expressions and the empty word**
@@ -157,7 +181,7 @@ def MatchSet (r : RegEx α) : Set (List α) := { w | r.Matches w }
   Prove the following lemma.
 -/
 lemma matchEpsilon_eq_true_iff (r : RegEx α) :
-    r.matchEpsilon = true ↔ r.Matches [] := by
+  r.matchEpsilon = true ↔ r.Matches [] := by
   sorry
 
 
