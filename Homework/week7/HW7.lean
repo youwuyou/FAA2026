@@ -418,31 +418,40 @@ def countT (q : ℕ) : List ℕ → TimeM ℕ ℕ
   it finds an element larger than `q`.
 -/
 
-def countSortedT (q : ℕ) : List ℕ → TimeM ℕ ℕ := sorry
-
--- Hint: `List.pairwise_cons` might be useful for (b).
+def countSortedT (q : ℕ) : List ℕ → TimeM ℕ ℕ
+  | [] => return 0
+  | x :: xs => do
+    ✓ let c := compareNat x q
+    if c = 1 then return 0    -- q < x ⇔ c = 1 and we can use `compareNat_eq_one_iff`
+    let n ← countSortedT q xs
+    return if c = 0 then n + 1 else n
 
 /-!
   **Task (b)**: Prove that `countSortedT` is correct for sorted lists.
 -/
 theorem countSortedT_correct (q : ℕ) (xs : List ℕ) (hs : xs.Pairwise (· ≤ ·)) :
-    (countSortedT q xs).ret = xs.count q := by
-  sorry
+  (countSortedT q xs).ret = xs.count q := by
+  -- unfold for the correctness proof
+  rw [TimeM.ret, List.count]
+  -- can induct directly on list `xs`
+  induction xs with
+  | nil => rfl
+  | cons => waterfall
 
 /-!
   **Task (c)**: Prove that the optimized implementation is always at least
   as fast as the baseline and that it has linear speedup for some inputs.
 -/
 theorem countSortedT_time_le (q : ℕ) (xs : List ℕ) :
-    (countSortedT q xs).time ≤ (countT q xs).time := by
-  sorry
+  (countSortedT q xs).time ≤ (countT q xs).time := by
+  waterfall
 
 theorem countSortedT_linear_speedup (n : ℕ) :
-    ∃ xs : List ℕ,
-      xs.Pairwise (· ≤ ·) ∧
-      xs.length = n + 1 ∧
-      (countSortedT 0 xs).time = 1 ∧
-      (countT 0 xs).time = n + 1 := by
+  ∃ xs : List ℕ,
+    xs.Pairwise (· ≤ ·) ∧
+    xs.length = n + 1 ∧
+    (countSortedT 0 xs).time = 1 ∧
+    (countT 0 xs).time = n + 1 := by
   sorry
 
 
