@@ -283,13 +283,12 @@ Hint: you might find a `Set` lemma from HW2 useful.
 -/
 theorem matchEpsilonT_semantic {α : Type} (r : RegEx α) :
   (matchEpsilonT r).ret = true ↔ [] ∈ r.MatchSet := by
-  constructor
-  · intro h
-    rw [RegEx.MatchSet]
-    sorry
-  · intro h
-    rw [RegEx.MatchSet] at h
-    sorry
+  -- the goal is a correctness proof of `r.matchEpsilonT.ret = true ↔ [] ∈ r.MatchSet`
+  -- we first unfold the monad, and then the regex definitions, then the set membership
+  rw [matchEpsilonT_correct, matchEpsilon_eq_true_iff, RegEx.MatchSet, Set.mem_ofPred_eq]
+
+
+#check Set.mem_ofPred_eq   -- (x ∈ {y | p y}) = p x
 
 /-!
   **Exercise 3: Lazy evaluation**
