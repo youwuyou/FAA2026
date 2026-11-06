@@ -91,9 +91,11 @@ lemma mem_inorder_node_of_lt {q x : ℕ} {l r : BinaryTree}
   simp_all only [inorder, List.mem_append, List.mem_cons, or_iff_left_iff_imp]
   intro h
   cases h
-  · grind
+  · omega -- directly uses q < x
   · obtain ⟨_, _, hl, hr⟩ := ht
-    apply hright at h_1
+    -- hright : ∀ x_1 ∈ inorder r, x < x_1
+    -- h_1:     q ∈ inorder r
+    apply hright at h_1 -- becomes x < q
     omega
 
 lemma mem_inorder_node_of_gt {q x : ℕ} {l r : BinaryTree}
