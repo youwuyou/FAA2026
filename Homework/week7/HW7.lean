@@ -305,15 +305,40 @@ theorem matchEpsilonT_semantic {α : Type} (r : RegEx α) :
   You can read more about lazy evaluation here:
   https://en.wikipedia.org/wiki/Lazy_evaluation
  -/
-def matchEpsilonT' {α : Type} : RegEx α → TimeM ℕ Bool := sorry
+
+-- **MyNotes:** We may think of the regex tree as a boolean circuit, then
+-- we shall notice the `.choice p q` corresponds to an OR-gate,
+-- while `.concat p q` corresponds to an AND-gate. We can then short-circuit
+-- these two cases so OR-gate is exit early iff the first operand is already true
+-- and the AND-gate is exit early iff the first operand is already false.
+
+def matchEpsilonT' {α : Type} : RegEx α → TimeM ℕ Bool
+  -- unchanged fields
+  | .epsilon => do ✓ return true
+  | .symbol _ => do ✓ return false
+  | .star _ => do ✓ return true
+  -- i). OR-gate
+  | .choice p q => do
+      ✓
+      let hp ← matchEpsilonT' p
+      if hp then return true
+            else matchEpsilonT' q
+  -- ii). AND-gate
+  | .concat p q => do
+      ✓
+      let hp ← matchEpsilonT' p
+      if !hp then return false
+             else matchEpsilonT' q
 
 theorem matchEpsilonT'_correct {α : Type} (r : RegEx α) :
   (matchEpsilonT' r).ret = r.matchEpsilon := by
-  sorry -- use `waterfall`
+  waterfall
+  -- sorry -- use `waterfall`
 
 theorem matchEpsilonT'_cost {α : Type} (r : RegEx α) :
-    (matchEpsilonT' r).time ≤ (matchEpsilonT r).time := by
-  sorry -- use `waterfall`
+  (matchEpsilonT' r).time ≤ (matchEpsilonT r).time := by
+  waterfall
+  -- sorry -- use `waterfall`
 
 /-!
   **Task (b)**
