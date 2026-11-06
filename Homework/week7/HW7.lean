@@ -446,13 +446,25 @@ theorem countSortedT_time_le (q : ℕ) (xs : List ℕ) :
   (countSortedT q xs).time ≤ (countT q xs).time := by
   waterfall
 
+-- construct a lazy list witness with the first element already 1 > q := 0
+def LazyListWitness : ℕ → List ℕ
+  | 0     => [1]
+  | n + 1 => 1 :: LazyListWitness n
+
 theorem countSortedT_linear_speedup (n : ℕ) :
   ∃ xs : List ℕ,
     xs.Pairwise (· ≤ ·) ∧
     xs.length = n + 1 ∧
     (countSortedT 0 xs).time = 1 ∧
     (countT 0 xs).time = n + 1 := by
-  sorry
-
+  -- in the following q = 0 is the element to be found
+  use LazyListWitness n
+  cases n
+  -- case 1: n = 0
+  · simp only [zero_add, countT_time, LazyListWitness, countSortedT]
+    split_ifs <;> waterfall
+  -- case 2:
+  · simp_all only [countT_time, LazyListWitness, List.length, countSortedT]
+    split_ifs <;> waterfall
 
 end HW7
