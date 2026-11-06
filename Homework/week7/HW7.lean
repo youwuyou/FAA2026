@@ -349,13 +349,34 @@ theorem matchEpsilonT'_cost {α : Type} (r : RegEx α) :
   speedup for some inputs.
 -/
 
+-- **MyNote:** Note that we need to show for all n ∈ ℕ, there
+-- exists such `∃ r : RegEx Char: regexSize r = 2 * n + 3`.
+-- To simplify the proof, we parameterize the construction of
+-- such witnesses depending on the `b : Bool` into the two cases below:
+
+def LazyOrWitness : ℕ → RegEx Char
+  | 0     => .choice .epsilon .epsilon
+  | n + 1 => .choice .epsilon (LazyOrWitness n)
+
+def LazyAndWitness : ℕ → RegEx Char
+  | 0     => .concat (.symbol 's') .epsilon
+  | n + 1 => .concat (.symbol 's') (LazyAndWitness n)
+
 theorem matchEpsilonT'_linear_speedup (n : ℕ) (b : Bool) :
-    ∃ r : RegEx Char,
-      regexSize r = 2 * n + 3 ∧
-      (r.Matches [] ↔ b) ∧
-      (matchEpsilonT r).time = regexSize r ∧
-      (matchEpsilonT' r).time = 2 := by
-  sorry
+  ∃ r : RegEx Char,
+  regexSize r = 2 * n + 3 ∧
+  (r.Matches [] ↔ b) ∧
+  (matchEpsilonT r).time = regexSize r ∧
+  (matchEpsilonT' r).time = 2 := by
+  cases b
+  -- case 1: b evaluates to false, the first element `s` is not an ε
+  -- we pick the `.concat` chain to enter the AND-gate case
+  · use LazyAndWitness n
+    fun_induction LazyAndWitness <;> waterfall
+  -- case 1: b evaluates to true, the first element is an ε
+  -- we use `.choice` to use and OR-gate witness
+  · use LazyOrWitness n
+    fun_induction LazyOrWitness <;> waterfall
 
 end RegEx
 
