@@ -266,7 +266,13 @@ theorem matchEpsilonT_time {α : Type} (r : RegEx α) :
   The *second* subtask must be proven using **only** `rw`.
 -/
 lemma matchEpsilonT_time5 {α : Type} : ∃ r : RegEx α, (matchEpsilonT r).time = 5 := by
-  sorry
+  --        concat
+  --        ╱    ╲
+  --   epsilon   concat
+  --            ╱    ╲
+  --      epsilon   epsilon
+  use RegEx.concat .epsilon (.concat .epsilon .epsilon)
+  rfl
 
 /--
 **Instruction**: Complete this theorem using **only** `rw`.
@@ -274,8 +280,14 @@ You should use the theorems proven in this exercise.
 Hint: you might find a `Set` lemma from HW2 useful.
 -/
 theorem matchEpsilonT_semantic {α : Type} (r : RegEx α) :
-    (matchEpsilonT r).ret = true ↔ [] ∈ r.MatchSet := by
-  sorry
+  (matchEpsilonT r).ret = true ↔ [] ∈ r.MatchSet := by
+  constructor
+  · intro h
+    rw [RegEx.MatchSet]
+    sorry
+  · intro h
+    rw [RegEx.MatchSet] at h
+    sorry
 
 /-!
   **Exercise 3: Lazy evaluation**
