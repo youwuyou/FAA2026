@@ -48,6 +48,9 @@ structure Graph (n : ℕ) where
   symm : ∀ u v, v ∈ adj u → u ∈ adj v
   /-- There are no self-loops. -/
   loopless : ∀ v, v ∉ adj v
+  /-- Adjacency lists are strictly sorted. -/
+  -- *MyNote:* add sortedness to ➊ avoid multi-edges ➋ dedup and adequately ➌ compare adjacent lists
+  sorted : ∀ u, (adj u).Pairwise (· < ·)
 
 namespace Graph
 
@@ -58,13 +61,43 @@ variable {n : ℕ}
 
 For example, `Graph.ofEdges [(0, 1), (1, 2)] : Graph 3` is the path `0 - 1 - 2`. -/
 def ofEdges (E : List (Fin n × Fin n)) (hE : ∀ e ∈ E, e.1 ≠ e.2 := by decide) : Graph n where
-  adj v := (E.filter (·.1 = v)).map (·.2) ++ (E.filter (·.2 = v)).map (·.1)
+  -- ensure the adjacency list is strictly sorted by filtering
+  adj v := (List.finRange n).filter (fun u => decide ((u, v) ∈ E ∨ (v, u) ∈ E))
   symm u v h := by
-    simp at h ⊢
-    exact h.symm
+    grind
   loopless v h := by
-    simp at h
-    exact hE (v, v) h rfl
+    grind
+  sorted u := (List.pairwise_lt_finRange n).filter _
+
+
+-- * Model the problem:
+-- what is a proper coloring?
+-- A k-coloring is a map from the vertex set to the Fin k := {0, 1, ..., k-1}
+abbrev Coloring n k := Fin n → Fin k
+
+-- A proper k-coloring requires if u ∈ adj v => c(u) != c(v), the existence statement allows us to
+-- tie a concrete coloring to a proposition
+def properColoring n k (g : Graph n) := ∃ c : Coloring n k, ∀ v : Fin n, ∀ u ∈ g.adj v, c u ≠ c v
+
+-- the maximum degree `Δ(G)`
+-- the size of the input?
+
+-- * Implement the greedy algorithm in `TimeM`. `TimeM` only counts the ticks that you write, so
+--   choose a cost model that describes what your algorithm would cost on a real computer, and
+--   explain in a comment for every tick which operations it pays for.
+
+
+
+-- * Test your algorithm on a few graphs.
+
+
+
+-- * (Optional) Prove that your algorithm computes a proper coloring with `Δ(G) + 1` colors.
+
+
+
+-- * (Optional) Prove that your algorithm runs in linear time.
+
 
 /-! ## Example graphs
 
