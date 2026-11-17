@@ -39,6 +39,9 @@ Below is a proposal for how to represent graphs. You may use it, or define your 
 
 namespace HW8
 
+-- *problem modeling*
+-- we additionally added `sorted` to ➊ avoid multi-edges & ➋ de-duplicate
+
 /-- An undirected graph without self-loops on the vertices `Fin n = {0, ..., n - 1}`,
 given by its adjacency lists: `v ∈ G.adj u` means that `u` and `v` are adjacent. -/
 structure Graph (n : ℕ) where
@@ -49,25 +52,11 @@ structure Graph (n : ℕ) where
   /-- There are no self-loops. -/
   loopless : ∀ v, v ∉ adj v
   /-- Adjacency lists are strictly sorted. -/
-  -- *MyNote:* add sortedness to ➊ avoid multi-edges ➋ dedup and adequately ➌ compare adjacent lists
   sorted : ∀ u, (adj u).Pairwise (· < ·)
 
 namespace Graph
 
 variable {n : ℕ}
-
-/-- The graph with the edges `E`: every edge `(u, v)` is stored in the adjacency lists of both
-`u` and `v`. For a concrete list `E`, Lean checks automatically that it has no self-loops.
-
-For example, `Graph.ofEdges [(0, 1), (1, 2)] : Graph 3` is the path `0 - 1 - 2`. -/
-def ofEdges (E : List (Fin n × Fin n)) (hE : ∀ e ∈ E, e.1 ≠ e.2 := by decide) : Graph n where
-  -- ensure the adjacency list is strictly sorted by filtering
-  adj v := (List.finRange n).filter (fun u => decide ((u, v) ∈ E ∨ (v, u) ∈ E))
-  symm u v h := by
-    grind
-  loopless v h := by
-    grind
-  sorted u := (List.pairwise_lt_finRange n).filter _
 
 
 -- * Model the problem:
@@ -86,23 +75,34 @@ def properColoring n k (g : Graph n) := ∃ c : Coloring n k, ∀ v : Fin n, ∀
 --   choose a cost model that describes what your algorithm would cost on a real computer, and
 --   explain in a comment for every tick which operations it pays for.
 
-
-
--- * Test your algorithm on a few graphs.
-
-
-
 -- * (Optional) Prove that your algorithm computes a proper coloring with `Δ(G) + 1` colors.
 
+-- *computational cost (Optional)*
+-- *Prove that your algorithm runs in linear time.
+-- * Implement the greedy algorithm in `TimeM`. `TimeM` only counts the ticks that you write, so
+--   choose a cost model that describes what your algorithm would cost on a real computer, and
+--   explain in a comment for every tick which operations it pays for.
 
-
--- * (Optional) Prove that your algorithm runs in linear time.
-
+-- *test on graphs*
+-- * Test your algorithm on a few graphs.
 
 /-! ## Example graphs
 
 Test your algorithm on these graphs, and on your own ones.
 -/
+
+/-- The graph with the edges `E`: every edge `(u, v)` is stored in the adjacency lists of both
+`u` and `v`. For a concrete list `E`, Lean checks automatically that it has no self-loops.
+
+For example, `Graph.ofEdges [(0, 1), (1, 2)] : Graph 3` is the path `0 - 1 - 2`. -/
+def ofEdges (E : List (Fin n × Fin n)) (hE : ∀ e ∈ E, e.1 ≠ e.2 := by decide) : Graph n where
+  -- ensure the adjacency list is strictly sorted by filtering
+  adj v := (List.finRange n).filter (fun u => decide ((u, v) ∈ E ∨ (v, u) ∈ E))
+  symm u v h := by
+    grind
+  loopless v h := by
+    grind
+  sorted u := (List.pairwise_lt_finRange n).filter _
 
 /-- The graph without vertices. -/
 def G1 : Graph 0 := .ofEdges []
