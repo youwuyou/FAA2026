@@ -59,15 +59,25 @@ namespace Graph
 variable {n : ℕ}
 
 
--- * Model the problem:
--- what is a proper coloring?
--- A k-coloring is a map from the vertex set to the Fin k := {0, 1, ..., k-1}
+-- *specifications* what is a proper coloring?
+-- A k-coloring is a map from the vertex set to the `Fin k := {0, 1, ..., k-1}`
 abbrev Coloring n k := Fin n → Fin k
 
--- A proper k-coloring requires if u ∈ adj v => c(u) != c(v), the existence statement allows us to
--- tie a concrete coloring to a proposition
-def properColoring n k (g : Graph n) := ∃ c : Coloring n k, ∀ v : Fin n, ∀ u ∈ g.adj v, c u ≠ c v
+-- A proper k-coloring requires if `u ∈ adj v => c(u) != c(v)`
+def IsProperColoring {n k : ℕ} (g : Graph n) (c : Coloring n k) : Prop :=
+  ∀ v, ∀ u ∈ g.adj v, c u ≠ c v
 
+-- here we use the existence statement in order to tie a concrete coloring to a proposition
+def Colorable {n : ℕ} (k : ℕ) (g : Graph n) : Prop :=
+  ∃ c : Coloring n k, IsProperColoring g c
+
+-- *derived properties of the graph*
+def degree (v : Fin n) (g : Graph n) : ℕ := (g.adj v).length
+def maxDegree (g : Graph n) : ℕ := Finset.univ.sup g.degree
+
+-- *algorithm*
+
+-- *correctness (Optional)*
 -- the maximum degree `Δ(G)`
 -- the size of the input?
 
