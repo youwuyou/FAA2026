@@ -67,7 +67,7 @@ def divStep (a b : ℕ) : ℕ × ℕ := (a / b, a % b)
 #check Nat.mod_lt
 
 /-- Returns `(g, s, t)` with `g = gcd a b` and `s * a + t * b = g`. -/
-def xgcdT (a b : ℕ) : TimeM ℕ (ℤ × ℤ × ℤ) :=
+def xgcdT (a b : ℕ) : TimeM ℕ (ℤ × ℤ × ℤ) := by
   sorry
 
 
@@ -274,7 +274,13 @@ lemma dfsT_closed (G : DiGraph n)
     (h : ∀ u ∈ visited, ∀ w, G.Adj u w → w ∈ visited ∨ w ∈ stack) :
     ∀ u ∈ (dfsT G stack visited).ret, ∀ w, G.Adj u w →
       w ∈ (dfsT G stack visited).ret := by
-  sorry
+  -- we try similar as reach proof above
+  fun_induction dfsT G stack visited with
+  | case1 visited => simpa using h
+  | case2 =>
+    simp only [TimeM.ret_bind]
+    sorry
+
 
 theorem dfsT_correct (G : DiGraph n) (s v : Fin n) :
     v ∈ (dfsT G [s] []).ret ↔ Reach G s v := by
@@ -282,7 +288,7 @@ theorem dfsT_correct (G : DiGraph n) (s v : Fin n) :
 
 theorem dfsT_visits_once (G : DiGraph n)
     (s : Fin n) :
-    (dfsT G [s] []).ret.Nodup :=
+    (dfsT G [s] []).ret.Nodup := by
   sorry
 
 /-!
