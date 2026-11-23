@@ -258,15 +258,15 @@ lemma dfsT_reach (G : DiGraph n)
 
 /-- No vertex is visited twice. -/
 lemma dfsT_nodup (G : DiGraph n)
-    (stack visited : List (Fin n))
-    (h : visited.Nodup) : (dfsT G stack visited).ret.Nodup := by
-  sorry
+  (stack visited : List (Fin n))
+  (h : visited.Nodup) : (dfsT G stack visited).ret.Nodup := by
+  waterfall
 
 /-- Vertices that are visited or on the stack will be visited. -/
 lemma mem_dfsT (G : DiGraph n)
     (stack visited : List (Fin n)) (v : Fin n)
     (h : v ∈ visited ∨ v ∈ stack) : v ∈ (dfsT G stack visited).ret := by
-  sorry
+  waterfall
 
 /-- When DFS stops, all neighbors of visited vertices are visited. -/
 lemma dfsT_closed (G : DiGraph n)
