@@ -94,16 +94,16 @@ decreasing_by
 abbrev xgcdTest (a b : ℕ) (result : ℤ × ℤ × ℤ) (steps : ℕ) : Prop :=
   (xgcdT a b).ret = result ∧ (xgcdT a b).time = steps
 /-! You can check your algorithm using the following test cases. -/
--- example : xgcdTest 0 0 (0, 1, 0) 0 := by native_decide
--- example : xgcdTest 17 0 (17, 1, 0) 0 := by native_decide
--- example : xgcdTest 0 17 (17, 0, 1) 1 := by native_decide
--- example : xgcdTest 42 42 (42, 0, 1) 1 := by native_decide
--- example : xgcdTest 21 7 (7, 0, 1) 1 := by native_decide
--- example : xgcdTest 7 21 (7, 1, 0) 2 := by native_decide
--- example : xgcdTest 54 24 (6, 1, -2) 2 := by native_decide
--- example : xgcdTest 13 7 (1, -1, 2) 3 := by native_decide
--- example : xgcdTest 240 46 (2, -9, 47) 5 := by native_decide
--- example : xgcdTest 144 89 (1, 34, -55) 10 := by native_decide
+example : xgcdTest 0 0 (0, 1, 0) 0 := by native_decide
+example : xgcdTest 17 0 (17, 1, 0) 0 := by native_decide
+example : xgcdTest 0 17 (17, 0, 1) 1 := by native_decide
+example : xgcdTest 42 42 (42, 0, 1) 1 := by native_decide
+example : xgcdTest 21 7 (7, 0, 1) 1 := by native_decide
+example : xgcdTest 7 21 (7, 1, 0) 2 := by native_decide
+example : xgcdTest 54 24 (6, 1, -2) 2 := by native_decide
+example : xgcdTest 13 7 (1, -1, 2) 3 := by native_decide
+example : xgcdTest 240 46 (2, -9, 47) 5 := by native_decide
+example : xgcdTest 144 89 (1, 34, -55) 10 := by native_decide
 
 /-!
   **Task (b)**: Prove that `xgcdT` is correct, i.e. it returns the gcd
@@ -122,7 +122,28 @@ lemma h_div (a b : ℕ) : ((a % b : ℕ) : ℤ) + b * (a / b : ℕ) = a := by
 
 theorem xgcdT_correct (a b : ℕ) (g s t : ℤ) (h_result : (xgcdT a b).ret = (g, s, t)) :
     g = Nat.gcd a b ∧ s * a + t * b = g := by
-    sorry
+  -- goal: show (g,s,t) returned from xgcdT fulfills Bezout's identity
+  -- following hint 1 here, it seems like otherwise we fix the (g,s,t) to be
+  -- the initial one, if I understood correctly
+  fun_induction xgcdT a b generalizing g s t with
+  -- goal 1: show g = gcd(a, 0) and s a + t 0 = g
+  | case1 a =>
+    grind
+  -- case 2: b ≠ 0
+  | case2 a b hnb ih =>
+    rcases h_rec : (xgcdT b (a % b)).ret with ⟨g', s', t'⟩ -- hint 2
+    -- by inductive hypothesis the Bezout is fulfilled by recursive results
+    have h_ih := ih g' s' t' h_rec
+    simp_all [divStep]
+    constructor
+    -- subgoal 2.1: g = gcd a b
+    -- it holds because
+    -- i). gcd_rec:   gcd(b,a-bq) = gcd(b,a)
+    -- ii). gcd_comm: gcd(a,b) = gcd(b,a)
+    · grind [Nat.gcd_rec, Nat.gcd_comm]
+    ----------------------
+    -- subgoal 2.2: the actual Bezout s * a + t * b = g
+    · grind [h_div a b]
 
 
 /-!
