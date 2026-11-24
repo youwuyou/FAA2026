@@ -362,12 +362,21 @@ lemma dfsT_time_le (G : DiGraph n)
     (stack visited : List (Fin n)) :
     (dfsT G stack visited).time ≤
       stack.length + ∑ v ∈ visited.toFinsetᶜ, (G.toList v).length := by
-  sorry
+  fun_induction dfsT with
+  | case1 => simp -- trivial case with no cost
+  | case2 v stack visited _ _ =>
+    -- subcase 2.1: if v is already visited;  we know each is visited at most once
+    by_cases hv : v ∈ visited
+    · grind
+    -- subcase 2.2: if v has not been visited, only then neighbors are pushed
+    · grind [List.toFinset_cons, Finset.compl_insert, Finset.add_sum_erase,
+      Finset.mem_compl, List.mem_toFinset]
 
 theorem dfsT_time (G : DiGraph n) (s : Fin n) :
     (dfsT G [s] []).time ≤ numEdges G + 1 := by
-  sorry
-
+  -- a stack with single [s] and [] empty visit list
+  have h := dfsT_time_le G [s] []
+  waterfall
 end DFS
 
 
