@@ -185,7 +185,24 @@ theorem xgcdT_correct (a b : ℕ) (g s t : ℤ) (h_result : (xgcdT a b).ret = (g
   ring
 
 theorem xgcdT_time (a b : ℕ) : (xgcdT a b).time ≤ 2 * Nat.log 2 b + 1 := by
-  sorry
+  induction b using Nat.strong_induction_on generalizing a with
+  | _ b ih =>
+    by_cases hb : b = 0
+    -- case 1: b = 0
+    · simp [hb, xgcdT]
+    -- case 2: b ≠ 0
+    · rw [xgcdT_time_step a b hb]
+      have hb_pos : 0 < b := by omega
+      have hrb := Nat.mod_lt a hb_pos
+      generalize hr_def : a % b = r at *
+      by_cases hr : r = 0
+      -- case 2.1: r = 0
+      · simp [hr, xgcdT]
+      -- case 2.2: r ≠ 0
+      · rw [xgcdT_time_step b r hr]
+        have h_ := mod_mul_two_lt (r := r) (b := b)
+        have h_log := log_add_one_le (m := b % r) (b := b)
+        grind
 
 
 /-!
