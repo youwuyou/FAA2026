@@ -318,11 +318,11 @@ lemma dfsT_closed (G : DiGraph n)
     ∀ u ∈ (dfsT G stack visited).ret, ∀ w, G.Adj u w →
       w ∈ (dfsT G stack visited).ret := by
   -- we try similar as reach proof above
-  fun_induction dfsT G stack visited with
+  fun_induction dfsT with
   | case1 visited => simpa using h
   | case2 =>
     simp only [TimeM.ret_bind]
-    sorry
+    waterfall
 
 
 theorem dfsT_correct (G : DiGraph n) (s v : Fin n) :
