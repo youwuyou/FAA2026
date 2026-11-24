@@ -327,7 +327,19 @@ lemma dfsT_closed (G : DiGraph n)
 
 theorem dfsT_correct (G : DiGraph n) (s v : Fin n) :
     v ∈ (dfsT G [s] []).ret ↔ Reach G s v := by
-  sorry
+  constructor
+  -- goal 1: v ∈ (dfsT G [s] []).ret → Reach G s v
+  · intro h
+    -- construct with argument one by one
+    apply dfsT_reach G s [s] [] at h
+    · exact h
+    · simp [Reach.refl]
+    · simp
+  -- goal 2: Reach G s v → v ∈ (dfsT G [s] []).ret
+  · intro h
+    induction h with
+    | refl => grind [mem_dfsT]
+    | tail _ _ _ => grind [dfsT_closed]
 
 theorem dfsT_visits_once (G : DiGraph n)
     (s : Fin n) :
