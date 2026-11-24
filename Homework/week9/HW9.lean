@@ -67,8 +67,27 @@ def divStep (a b : ℕ) : ℕ × ℕ := (a / b, a % b)
 #check Nat.mod_lt
 
 /-- Returns `(g, s, t)` with `g = gcd a b` and `s * a + t * b = g`. -/
-def xgcdT (a b : ℕ) : TimeM ℕ (ℤ × ℤ × ℤ) := by
-  sorry
+def xgcdT (a b : ℕ) : TimeM ℕ (ℤ × ℤ × ℤ) :=
+  -- we follow the description and took some inspirations from `bfs_rec` sheet3 week09
+  if h : b = 0 then
+    return (a, 1, 0)
+  else do
+    -- ➊ compute with helper function divStep
+    --  * Let `q = a/b` and `r = a%b`
+    ✓
+    let qr := divStep a b -- (a / b, a % b)
+    let q := qr.1         -- obtain a / b
+    let r := qr.2         -- obtain a % b
+
+    -- ➋ * Call `gcd(b, r)`; let `g` be the returned GCD and `s`, `t` the coefficients.
+    let ⟨g, s, t⟩ ← xgcdT b r
+
+    -- ➌ Return GCD `g` and coefficients `t`, `s - q*t`
+    return (g, t, s - q * t)
+termination_by b
+-- we have a % bi < bi with decreasing bi
+decreasing_by
+  exact Nat.mod_lt a (Nat.pos_of_ne_zero h)
 
 
 /-- `xgcdTest a b result steps` checks the observable behavior of `xgcdT a b`. -/
@@ -139,7 +158,10 @@ theorem xgcdT_correct (a b : ℕ) (g s t : ℤ) (h_result : (xgcdT a b).ret = (g
 /-- Unfolding one step of `xgcdT`. -/
 @[simp] lemma xgcdT_time_step (a b : ℕ) (hb : b ≠ 0) :
     (xgcdT a b).time = (xgcdT b (a % b)).time + 1 := by
-  sorry
+  rw [xgcdT]
+  -- our hb is b ≠ 0 case in the else case
+  simp [hb]
+  ring
 
 theorem xgcdT_time (a b : ℕ) : (xgcdT a b).time ≤ 2 * Nat.log 2 b + 1 := by
   sorry
@@ -289,7 +311,8 @@ theorem dfsT_correct (G : DiGraph n) (s v : Fin n) :
 theorem dfsT_visits_once (G : DiGraph n)
     (s : Fin n) :
     (dfsT G [s] []).ret.Nodup := by
-  sorry
+  -- above we proved the lemma that no vertices are visited twice
+  simp [dfsT_nodup]
 
 /-!
   **Task (b)**: Prove that DFS takes at most one time unit per edge (plus one for `s`).
