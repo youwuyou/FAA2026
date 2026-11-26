@@ -147,7 +147,7 @@ theorem totalCost_le (s queries : List α) :
 -/
 example (s queries : List Nat) :
     countHits s queries = (queries.filter fun x => x ∈ s.toFinset).length := by
-    sorry
+    exact countHits_correct s queries
 
 end ListSet
 
