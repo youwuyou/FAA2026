@@ -337,13 +337,30 @@ end UnionSet
 
 3. Replace the `sorry`s in the examples below.
 -/
-def smallMemory : BSTSet Nat where
-  tree := sorry
-  IsBST := sorry
 
+-- helper
+-- just an append with a singleton with no other children
+def BST.newChild {α : Type} (key : α) : BST α := .node key .nil .nil
+
+-- The small memory
+--     5
+--    ╱ ╲
+--   2   8
+def smallMemory : BSTSet Nat where
+  tree := .node 5 (.newChild 2) (.newChild 8)
+  IsBST := by
+    unfold BST.newChild
+    simp [BST.IsBST, BST.elements]
+
+-- The small cache has access `left` to a [8]
+-- and `right` to the global memory tree
+--  ➊ `left`         ➋ `right`
+--      [8]               5
+--                       ╱ ╲
+--                      2   8
 def smallCache : UnionSet (List Nat) (BSTSet Nat) where
-  left := sorry
-  right := sorry
+  left := [8]
+  right := smallMemory
 
 def smallCacheCost (x : Nat) : Nat :=
   UnionSet.containsCost
@@ -351,16 +368,12 @@ def smallCacheCost (x : Nat) : Nat :=
     (fun x => BSTSet.containsCost x smallCache.right)
     x smallCache
 
-example : countHits smallCache [8, 3, 2, 8] = 3 := by
-  sorry
+example : countHits smallCache [8, 3, 2, 8] = 3 := rfl
 
-example : countHits smallCache [5, 2, 1, 4] = 2 := by
-  sorry
+example : countHits smallCache [5, 2, 1, 4] = 2 := rfl
 
-example : smallCacheCost 8 = 1 := by
-  sorry
+example : smallCacheCost 8 = 1 := rfl
 
-example : smallCacheCost 2 = 3 := by
-  sorry
+example : smallCacheCost 2 = 3 := rfl
 
 end HW10
