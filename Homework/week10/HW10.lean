@@ -68,8 +68,13 @@ Prove that `q` lookups cost at most `q * C` if every lookup costs at most `C`.
 theorem totalLookupCost_le {α : Type}
     (cost : α → Nat) (queries : List α) (C : Nat) (hcost : ∀ x, cost x ≤ C) :
     totalLookupCost cost queries ≤ queries.length * C := by
-  sorry
-
+  fun_induction totalLookupCost with
+  | case1 =>
+    simp
+  | case2 elem l ih=>
+    grw [ih] -- use inductive hypothesis for inequality
+    simp [List.length]
+    grind
 
 /-! ## Exercise 2: a list-based set -/
 
@@ -101,7 +106,14 @@ instance listMembership : Membership α (List α) where
 -/
 theorem containsCost_le (x : α) (xs : List α) :
     containsCost x xs ≤ xs.length := by
-  sorry
+  induction xs
+  · rfl
+  · expose_names
+    -- simp? [containsCost]
+    simp only [containsCost, List.length_cons]
+    split_ifs <;> expose_names
+    · omega
+    · omega
 
 /-!
 **Task 2(c).** Combine Task 1(b) with Task 2(b).
@@ -112,7 +124,10 @@ the total lookup cost is at most `q * l`.
 theorem totalCost_le (s queries : List α) :
     totalLookupCost (fun x => containsCost x s) queries ≤
       queries.length * s.length := by
-  sorry
+  expose_names
+  apply totalLookupCost_le -- what we just proved above
+  intro h
+  apply containsCost_le
 
 /-!
 **Instruction:** Prove correctness using one function call in term mode or one `exact` expression.
@@ -200,7 +215,11 @@ theorem contains_correct (x : α) (tree : BST α) (hIsBST : tree.IsBST) :
 -/
 theorem containsCost_le_height (x : α) (tree : BST α) :
     containsCost x tree ≤ tree.height := by
-  sorry
+  induction tree <;> expose_names
+  -- case 1: nil
+  · rfl
+  -- case 2: node
+  · waterfall
 
 end BST
 
@@ -232,7 +251,11 @@ logarithmic height, but no balancing theorem is needed here.
 theorem totalCost_le (s : BSTSet α) (queries : List α) :
     totalLookupCost (fun x => containsCost x s) queries ≤
       queries.length * s.tree.height := by
-  sorry
+  expose_names
+  apply totalLookupCost_le
+  intro h
+  simp only [containsCost]
+  apply BST.containsCost_le_height
 
 end BSTSet
 
