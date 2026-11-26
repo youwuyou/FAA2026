@@ -250,9 +250,9 @@ variable {α : Type} [LinearOrder α]
 `BST.contains_correct` and the IsBST proof stored in `s.IsBST`.
 -/
 instance bstMembership : Membership α (BSTSet α) where
-  contains := sorry
-  elements := sorry
-  contains_correct := sorry
+  contains := fun x s => BST.contains x s.tree
+  elements := fun s => s.tree.elements
+  contains_correct := fun x s => BST.contains_correct x s.tree s.IsBST
 
 def containsCost (x : α) (s : BSTSet α) : Nat :=
   BST.containsCost x s.tree
@@ -290,20 +290,27 @@ variable {α S T : Type} [DecidableEq α]
 /-- Search `left` first and search `right` only after a miss. -/
 def contains [Membership α S] [Membership α T]
     (x : α) (s : UnionSet S T) : Bool :=
-  sorry
+  Membership.contains x s.left || Membership.contains x s.right
 
 def elements [Membership α S] [Membership α T]
     (s : UnionSet S T) : Finset α :=
-  sorry
+  Membership.elements s.left ∪ Membership.elements s.right
 
 /-!
 **Task 4(a).** Fill out the `sorry`s and complete the `Membership` instance.
 -/
+
+-- helper function
+theorem contains_correct [Membership α S] [Membership α T]
+    (x : α) (s : UnionSet S T) :
+    contains x s = true ↔ x ∈ elements s := by
+    simp [contains, elements, Bool.or_eq_true, Finset.mem_union, Membership.contains_correct]
+
 instance unionMembership [Membership α S] [Membership α T] :
     Membership α (UnionSet S T) where
-  contains := sorry
-  elements := sorry
-  contains_correct := sorry
+  contains := contains
+  elements := elements
+  contains_correct := contains_correct
 
 /-! Suppose `leftCost x` and `rightCost x` model the costs of the two
 underlying lookups. The left lookup is **always** performed, but the right lookup
