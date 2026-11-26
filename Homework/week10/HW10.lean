@@ -318,7 +318,9 @@ is performed **only** if the left lookup returns `false`. -/
 def containsCost
     [Membership α S]
     (leftCost rightCost : α → Nat) (x : α) (s : UnionSet S T) : Nat :=
-  sorry
+  -- always perform left one
+  if Membership.contains x s.left then leftCost x
+  else leftCost x + rightCost x
 
 end UnionSet
 
