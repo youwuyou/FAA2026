@@ -43,7 +43,8 @@ def lenT : List ℕ → TimeM ℕ ℕ
 theorem lenT_correctness (xs : List ℕ) : (lenT xs).ret = len xs := by
   induction xs
   · rfl
-  · simp only [lenT, bind_pure_comp, TimeM.ret_bind, TimeM.ret_map]
+  · simp only [lenT]
+    simp
     rw [tail_ih]
     rfl
 
@@ -72,18 +73,25 @@ def sum : List ℕ → ℕ
 
 def sumT : List ℕ → TimeM ℕ ℕ
 | [] => return 0
-| x :: xs => sorry
+| x :: xs => do
+    ✓
+    let sum_xs ← sumT xs
+    return x + sum_xs
 
 theorem sumT_correctness (xs : List ℕ) : (sumT xs).ret = sum xs := by
-  induction xs with
-  | nil => rfl
-  | cons x xs ih => sorry
+  induction xs
+  · rfl
+  · simp [sumT]
+    simp [tail_ih]
+    rfl
 
 -- Exercise: Prove time complexity
 theorem sumT_time (xs : List ℕ) : (sumT xs).time = xs.length := by
-  induction xs with
-  | nil => rfl
-  | cons x xs ih => sorry
+  induction xs
+  · rfl
+  · simp [sumT, tail_ih]
+    ring
+
 
 -- ============================================================================
 -- EXERCISE 2: Reverse a list
@@ -98,21 +106,29 @@ def reverse : List ℕ → List ℕ
 
 def reverseT : List ℕ → TimeM ℕ (List ℕ)
 | [] => return []
-| x :: xs => sorry
+| x :: xs => do
+  ✓[xs.length]
+  let reverse_xs ← reverseT xs
+  return reverse_xs ++ [x]
 
 -- Prove correctness
 theorem reverseT_correctness (xs : List ℕ) : (reverseT xs).ret = reverse xs := by
-  sorry
+  induction xs
+  · rfl
+  · simp [reverseT, tail_ih]
+    rfl
 
 -- Hint: You'll need a helper lemma about the time of append
 theorem reverseT_time_quadratic (xs : List ℕ) :
   ∃ c, (reverseT xs).time ≤ c * xs.length * xs.length := by
   use 1
   simp only [one_mul]
-  induction xs with
-  | nil => simp [reverseT]
-  | cons x xs ih =>
-      sorry
+  induction xs
+  · rfl
+  · simp [reverseT, bind_pure_comp, TimeM.time_bind,
+    TimeM.time_tick, TimeM.time_map, List.length_cons]
+    grind
+
 
 -- ============================================================================
 -- EXERCISE 3: Tail-recursive reverse with accumulator
@@ -122,8 +138,10 @@ theorem reverseT_time_quadratic (xs : List ℕ) :
 -- Expected time complexity: n (linear, much better than reverseT!)
 
 def reverseTailT : List ℕ → List ℕ → TimeM ℕ (List ℕ)
-| [], acc => sorry
-| x :: xs, acc => sorry
+| [], acc => return acc
+| x :: xs, acc => do
+  TimeM.tick 1
+  reverseTailT xs (x :: acc)
 
 def reverseTail : List ℕ → List ℕ → List ℕ
 | [], acc => acc
@@ -132,9 +150,20 @@ def reverseTail : List ℕ → List ℕ → List ℕ
 -- Prove correctness
 theorem reverseTailT_correctness (xs acc : List ℕ):
   (reverseTailT xs acc).ret = reverseTail xs acc := by
-  sorry
+  fun_induction reverseTailT with
+    | case1 =>
+      rfl
+    | case2 =>
+      simp
+      simp [ih1, reverseTail]
 
 -- Prove linear time complexity
 theorem reverseTailT_time (xs acc : List ℕ):
   (reverseTailT xs acc).time = xs.length := by
-  sorry
+  fun_induction reverseTailT with
+  | case1 =>
+    rfl
+  | case2 =>
+    simp
+    simp [ih1]
+    ring
