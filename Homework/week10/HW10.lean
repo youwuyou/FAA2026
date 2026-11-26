@@ -52,7 +52,10 @@ Prove correctness using `Membership.contains_correct`.
 theorem countHits_correct {α S : Type} [DecidableEq α] [Membership α S]
     (s : S) (queries : List α) : countHits s queries =
       (queries.filter fun x => x ∈ (Membership.elements s : Finset α)).length := by
-  sorry
+  induction queries
+  · rfl
+  · expose_names
+    waterfall
 
 /-! Cost model: If `cost x` is the cost of querying `x`, then
 `totalLookupCost cost queries` is the cost of all queries. -/
@@ -98,7 +101,17 @@ def containsCost (x : α) : List α → Nat
 instance listMembership : Membership α (List α) where
   contains := contains
   elements := List.toFinset
-  contains_correct := sorry
+  contains_correct := by
+    expose_names
+    intro s l
+    induction l
+    · -- simp?
+      simp only [List.toFinset_nil, Finset.notMem_empty, iff_false, Bool.not_eq_true]
+      by_contra
+      apply this
+      contradiction
+    · expose_names
+      waterfall
 
 
 /-!
